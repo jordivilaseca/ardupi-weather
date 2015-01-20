@@ -21,7 +21,11 @@ class weather:
 
 	def id2forecast(self, id):
 		symbols = self.weatherRoot.findall("simbol")
-		return symbols[int(id)-1].attrib["nomsimbol"]
+		print (id,"/" ,len(symbols))
+		for el in symbols:
+			if el.attrib["id"] == id:
+				return el.attrib["nomsimbol"]
+		return "previsio no trobada"
 
 	def setWeatherForecast(self, id):
 		all = self.weatherRoot.findall("prediccio")
