@@ -1,17 +1,27 @@
 // temps entre actualitzacions de els elements
 // [lm35_1, lm35_2, ldr_1]
 const int numSen = 3;
-int types[] = {0, 0, 1};
+const int groundPin = A0;
+int types[] = {0,0,1};
 unsigned long lastUpdate[] = {0,0,0};
-unsigned long updateTimes[] = {60000, 60000, 30000};
-int pins[] = {A0, A0, A2};
+unsigned long updateTimes[] = {60000,60000,30000};
+int pins[] = {A1,A5,A3};
+
+int secureAnalogRead(int pin) {
+  delay(0.1);
+  analogRead(groundPin);
+  delay(0.1);
+  return analogRead(pin);
+  
+}
 
 float lm35(int pin) {
-  return (5.0 * analogRead(pin) * 100.0) / 1024;
+  return (5.0 * secureAnalogRead(pin) * 100.0) / 1024;
+  //return analogRead(pin);
 }
 
 float ldr(int pin) {
-  return 10;
+  return secureAnalogRead(pin);
 }
 
 void sendCommand(String c, float v) {
@@ -38,9 +48,10 @@ void update(int type, int pin) {
 
 void updateAll() {
   for (int i = 0; i < numSen; i++) {
-    if (lastUpdate[i] + updateTimes[i] < millis()) {
+    unsigned long actTime = millis();
+    if (actTime - lastUpdate[i]  > updateTimes[i]) {
       update(types[i], pins[i]);
-      lastUpdate[i] = millis();
+      lastUpdate[i] = actTime;
     }
   }
 }
