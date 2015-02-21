@@ -5,11 +5,12 @@ from time import sleep
 import serial
 
 class arduino:
-	validInputs = ["lm35", "ldr", "dump"]
 
-	def __init__(self, port, baud):
+	def __init__(self, port, baud, sensors):
 		self.port = port
 		self.baud = baud
+		self.sensors = sensors
+		self.func = {"string": self.readString, "float": self.readFloat, "integer": self.readInt}
 		self.ser = serial.Serial("/dev/" + port, baud, timeout=0) # Establish the connection on a specific port
 		
 	def readBytes(self):
@@ -28,12 +29,15 @@ class arduino:
 	def readInput(self):
 		rawInput = self.readString()
 		idInput = self.getSensorId(rawInput)
-		if (idInput not in self.validInputs and len(rawInput) > 0):
-			print ("Not valid input: ", rawInput)
-			return ["invalid", "invalid", "invalid"]
+		if (len(rawInput) > 0):
+			if (rawInput not in self.sensors):
+				print ("Not valid input: ", rawInput)
+				return ["invalid", "invalid", "invalid"]
+			else:
+				value = self.func[self.sensors[rawInput]]()
+				return [idInput, rawInput, value]
 		else:
-			value = self.readString()
-			return [idInput, rawInput, value]
+			return ["","",""]
 
 	def getSensorId(self, sensor):
 		return sensor.split("_")[0]
