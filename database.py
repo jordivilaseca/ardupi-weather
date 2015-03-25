@@ -4,7 +4,7 @@ import sqlite3
 
 class database:
 	def __init__(self, path):
-		self.db = sqlite3.connect(path)
+		self.db = sqlite3.connect(path, check_same_thread=False)
 		self.cursor = self.db.cursor()
 
 	def createTable(self, tableName, variables):

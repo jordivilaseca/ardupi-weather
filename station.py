@@ -1,17 +1,18 @@
 #!/usr/bin/python
 
 import arduino
-import database 
+from database import database 
 import os
-import terminal
-import myTime
+from terminal import terminal
+from myTime import myTime
 from datetime import datetime
 import time
 
 def getFullDate():
 	return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
-def printSensor(date, sensorId, sensor, value):
+def printSensor(sensorId, sensor, value):
+	date = getFullDate()
 	if sensorId == "lm35":
 		print (date, sensor, value, "ºC")
 	elif sensorId == "ldr":
@@ -30,7 +31,7 @@ def processSensors(sensSum, sensNum, sensList, partialList):
 		partialList.append(sensSum[elem]/sensNum[elem])
 	return partialList
 
-myT = myTime.myTime(0,3,0)
+myT = myTime(0,3,0)
 
 sensorsDic = {"lm35_19": "float", "lm35_23": "float", "ldr_21": "integer", "dump_pin": "string"}
 types = ["float", "float", "integer"]
@@ -57,15 +58,15 @@ tableVariables2 = ["date", "lm35_19", "lm35_23", "ldr_21"]
 aPort = "ttyACM0"
 aBaud = 57600
 
-#db = database.database(DBpath)
+#db = database(DBpath)
 #db.createTable(tableName, tableVariables)
 
-db = database.database(DBpath2)
+db = database(DBpath2)
 db.createTable(tableName2, tableVariables2)
 
 ard = arduino.arduino(aPort, aBaud, sensorsDic)
 
-t = terminal.terminal()
+t = terminal()
 
 while True:
 	idInput, rawInput, value = ard.readInput()
@@ -76,7 +77,7 @@ while True:
 			if rawInput in sensorList:
 				sensorSum[rawInput] += value
 				sensorNum[rawInput] += 1
-				printSensor(date, idInput, rawInput, value)
+				printSensor(idInput, rawInput, value)
 
 	if (myT.isUpdateTime()):
 		date = getFullDate()
