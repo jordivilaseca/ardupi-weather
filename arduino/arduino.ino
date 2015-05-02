@@ -50,7 +50,6 @@ boolean bmp180Pressure(double &P) {
   double T, absP;
   char status;
   if(bmp180Temperature(T)) {
-    Serial.println(T);
     status = pressure.startPressure(3);
     if (status != 0) {
         delay(status);
