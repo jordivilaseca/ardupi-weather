@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import arduino
-from database import database 
+from database import databaseController
 import os
 from terminal import terminal
 from myTime import myTime
@@ -23,12 +23,13 @@ def printDump(dumpId, rawDump, value):
 
 	print ('-'*50)
 
-def processSensors(sensSum, sensNum, sensList, partialList):
-	for elem in sensList:
-		partialList.append(sensSum[elem]/sensNum[elem])
-	return partialList
+def processSensors(sensSum, sensNum, sensorList):
+	l = [getFullDate()]
+	for elem in sensorList:
+		l.append(sensSum[elem]/sensNum[elem])
+	return l
 
-myT = myTime(0,3,0)
+myT = myTime(0,1,0)
 
 sensorUnits = {"T": "float", "H": "float", "P": "float", "HI": "float"}
 
@@ -38,17 +39,12 @@ sensorNum = {"T" : 0, "H" : 0, "HI" : 0, "P" : 0}
 sensorValueList = ["T", "H", "HI", "P"]
 
 sensorUnit = {'T' : 'ºC', 'P' : 'Pa', 'H': '% humidity', 'HI': 'ºC'}
-# DataBase prova
-DBpath = os.path.dirname(os.path.realpath(__file__)) + "/database/prova"
-tableName = "prova"
-table = ["date TEXT PRIMARY KEY", "sensorType TEXT", "sensor TEXT", "value TEXT"]
-tableVariables = ["date", "sensorType", "sensor", "value"]
 
 #DataBase prova2
-DBpath2 = os.path.dirname(os.path.realpath(__file__)) + "/database/prova2"
+DBpath2 = os.path.dirname(os.path.realpath(__file__)) + "/data/prova2"
 tableName2 = "newSensors"
 table2 = ["date TEXT PRIMARY KEY", "Temperature FLOAT", "Humidity FLOAT", "HeatIndex INTEGER", "Pressure FLOAT"]
-tableVariables2 = ["date", "Temprerature", "Humidity", "HeatIndex", "Pressure"]
+tableVariables2 = ["date", "Temperature", "Humidity", "HeatIndex", "Pressure"]
 
 
 # Arduino info
@@ -58,8 +54,9 @@ aBaud = 57600
 #db = database(DBpath)
 #db.createTable(tableName, tableVariables)
 
-db = database(DBpath2)
-db.createTable(tableName2, tableVariables2)
+dbc = databaseController.databaseController()
+dbc.enableMongodb(tableName2)
+dbc.createDataContainer(tableName2, table2)
 
 ard = arduino.arduino(aPort, aBaud, sensorUnits)
 
@@ -74,8 +71,8 @@ while True:
 			printSensor(sensor, valueType, value)
 
 	if (myT.isUpdateTime()):
-		date = getFullDate()
-		db.insert(tableName2, tableVariables2, processSensors(sensorSum, sensorNum, sensorValueList, [date]))
+		dbc.insertDataEntry(tableName2, tableVariables2, processSensors(sensorSum, sensorNum, sensorValueList))
+		print('Inserted data')
 
 		# Reset data
 		sensorSum = dict.fromkeys(sensorSum, 0)
