@@ -2,7 +2,7 @@
 
 import sqlite3
 
-class database:
+class sqlitedb:
 	def __init__(self, path):
 		self.db = sqlite3.connect(path, check_same_thread=False)
 		self.cursor = self.db.cursor()

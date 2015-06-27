@@ -1,7 +1,7 @@
 import pymongo
 
 
-class mongodb():
+class mongodb:
 	def __init__(self, server, port):
 		self.server = server
 		self.port = port
