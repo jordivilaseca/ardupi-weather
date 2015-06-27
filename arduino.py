@@ -27,20 +27,18 @@ class arduino:
 		return self.readBytes().decode("utf-8")
 
 	def readInput(self):
-		rawInput = self.readString()
-		idInput = self.getSensorId(rawInput)
-		if (len(rawInput) > 0):
-			if (rawInput not in self.sensors):
-				print ("Not valid input: ", rawInput)
-				return ["invalid", "invalid", "invalid"]
+		sensor = self.readString()
+		if (len(sensor) > 0):
+			valueType = self.getValueType(sensor)
+			if (valueType in self.sensors):
+				value = self.func[self.sensors[valueType]]()
+				return [sensor, valueType, value]
 			else:
-				value = self.func[self.sensors[rawInput]]()
-				return [idInput, rawInput, value]
-		else:
-			return ["","",""]
+				print ("Not valid input: ", sensor)
+		return ["","",""]
 
-	def getSensorId(self, sensor):
-		return sensor.split("_")[0]
+	def getValueType(self, sensor):
+		return sensor.split("_")[1]
 
 	def write(self, s):
 		com = s.split()

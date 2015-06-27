@@ -82,7 +82,7 @@ void update(int type, int pin) {
     case BMP180T:
       {
       double t;
-      c = "BMP180T";
+      c = "BMP180_T";
       if (bmp180Temperature(t)) v = String(t);
       else v = c + " Error";
       break;
@@ -91,7 +91,7 @@ void update(int type, int pin) {
     case BMP180P:
       {
       double p;
-      c = "BMP180P";
+      c = "BMP180_P";
       if (bmp180Pressure(p)) v = String(p);
       else v = c + " Error";
       break;
@@ -100,7 +100,7 @@ void update(int type, int pin) {
     case DHT22T:
       {
       float t = dht.readTemperature();    // Default temperature unit is ºC.
-      c = "DHT22T";
+      c = "DHT22_T";
       v = String(t);
       break;
       }
@@ -108,7 +108,7 @@ void update(int type, int pin) {
     case DHT22H:
       {
       float h = dht.readHumidity();
-      c = "DHT22H";
+      c = "DHT22_H";
       v = String(h);
       break;
       }
@@ -118,7 +118,7 @@ void update(int type, int pin) {
       h = dht.readHumidity();
       t = dht.readTemperature(true);    // We need value in farenheit.
       hi = dht.computeHeatIndex(t,h);
-      c = "DHT22HI";
+      c = "DHT22_HI";
       v = String(dht.convertFtoC(hi));
       break;
       }
