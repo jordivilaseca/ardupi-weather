@@ -10,7 +10,7 @@ class arduino:
 		self.port = port
 		self.baud = baud
 		self.sensors = sensors
-		self.func = {"string": self.readString, "float": self.readFloat, "integer": self.readInt}
+		self.func = {"TEXT": self.readString, "FLOAT": self.readFloat, "INTEGER": self.readInt}
 		self.ser = serial.Serial("/dev/" + port, baud, timeout=0) # Establish the connection on a specific port
 		
 	def readBytes(self):

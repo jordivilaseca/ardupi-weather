@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import arduino
+from arduino import arduino
 from database import databaseController
 import os
 from terminal import terminal
@@ -9,11 +9,17 @@ from datetime import datetime
 import time
 
 def getFullDate():
-	return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+		return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
-def printSensor(sensor, valueType, value):
+def printSensor(sensor, value):
 	date = getFullDate()
-	print (date, sensor, value, sensorUnit[valueType])
+	print (date, sensor, value)
+
+def processSensors(sensSum, sensNum, sensorList):
+	d = {'DATE' : getFullDate()}
+	for elem in sensorList:
+		d[elem]= round(sensSum[elem]/sensNum[elem], 1)
+	return d
 
 def printDump(dumpId, rawDump, value):
 	print ('-'*50)
@@ -23,67 +29,77 @@ def printDump(dumpId, rawDump, value):
 
 	print ('-'*50)
 
-def processSensors(sensSum, sensNum, sensorList):
-	l = [getFullDate()]
-	for elem in sensorList:
-		l.append(sensSum[elem]/sensNum[elem])
-	return l
+def checkKeysDict(dic, keys):
+	if all (keys in dic for key in keys):
+	    return True
+	else:
+		return False
 
-myT = myTime(0,1,0)
+class station:
+	def __init__(self, sensors):
+		self.sensorUnits = sensors
+		self.sensorSum = dict.fromkeys(sensors, 0)
+		self.sensorNum = dict.fromkeys(sensors, 0)
+		self.sensorValueList = list(sensors.keys())
 
-sensorUnits = {"T": "float", "H": "float", "P": "float", "HI": "float"}
+		self.dbHeaderUnits = {'DATE' : 'TEXT'}
+		self.dbHeaderUnits.update(self.sensorUnits)
 
-# To do average of sensors
-sensorSum = {"T" : 0, "H" : 0, "HI" : 0, "P" : 0}
-sensorNum = {"T" : 0, "H" : 0, "HI" : 0, "P" : 0}
-sensorValueList = ["T", "H", "HI", "P"]
+		self.dbc = databaseController.databaseController()
 
-sensorUnit = {'T' : 'ºC', 'P' : 'Pa', 'H': '% humidity', 'HI': 'ºC'}
+		self.myT = myTime()
 
-#DataBase prova2
-DBpath2 = os.path.dirname(os.path.realpath(__file__)) + "/data/prova2"
-tableName2 = "newSensors"
-table2 = ["date TEXT PRIMARY KEY", "Temperature FLOAT", "Humidity FLOAT", "HeatIndex INTEGER", "Pressure FLOAT"]
-tableVariables2 = ["date", "Temperature", "Humidity", "HeatIndex", "Pressure"]
+	def enableSqlitedb(self, path=os.path.dirname(os.path.realpath(__file__)) + "/data/weatherStationDB"):
+		self.dbSensorsName = path.split('/')[-1]
+		self.sqlitePath = path
+		self.dbc.enableSqlitedb(path)
 
+	def enableMongodb(self, dbName='weatherStationDB', server='localhost',port=27017):
+		self.dbSensorsName = dbName
+		self.dbc.enableMongodb(dbName, server, port)
 
-# Arduino info
-aPort = "ttyACM0"
-aBaud = 57600
+	def enableUsbArduino(self, port, baud):
+		self.dbc.createDataContainer('sensorsData', self.dbHeaderUnits)
+		self.ard = arduino(port, baud, self.sensorUnits)
 
-#db = database(DBpath)
-#db.createTable(tableName, tableVariables)
+	def setTimeDatabaseUpdates(self, h, m, s):
+		self.myT.setTimeUpdates(h, m, s)
 
-dbc = databaseController.databaseController()
-dbc.enableMongodb(tableName2)
-dbc.createDataContainer(tableName2, table2)
+	def run(self):
+		t = terminal()
 
-ard = arduino.arduino(aPort, aBaud, sensorUnits)
+		while True:
+			sensor, valueType, value = self.ard.readInput()
+			if (len(sensor) > 0):
+				if valueType in self.sensorValueList:
+					self.sensorSum[valueType] += value
+					self.sensorNum[valueType] += 1
+					printSensor(sensor, value)
 
-t = terminal()
+			if (self.myT.isUpdateTime()):
+				valuesDict = processSensors(self.sensorSum, self.sensorNum, self.sensorValueList)
+				self.dbc.insertDataEntry('sensorsData', valuesDict)
+				print('Inserted data')
 
-while True:
-	sensor, valueType, value = ard.readInput()
-	if (len(sensor) > 0):
-		if valueType in sensorValueList:
-			sensorSum[valueType] += value
-			sensorNum[valueType] += 1
-			printSensor(sensor, valueType, value)
+				# Reset data
+				self.sensorSum = dict.fromkeys(self.sensorSum, 0)
+				self.sensorNum = dict.fromkeys(self.sensorNum, 0)
 
-	if (myT.isUpdateTime()):
-		dbc.insertDataEntry(tableName2, tableVariables2, processSensors(sensorSum, sensorNum, sensorValueList))
-		print('Inserted data')
+				# Set next update
+				self.myT.update()
 
-		# Reset data
-		sensorSum = dict.fromkeys(sensorSum, 0)
-		sensorNum = dict.fromkeys(sensorNum, 0)
+			inp = t.readLine()
+			if inp != "":
+				self.ard.write(inp)
+			time.sleep(0.1)
 
-		# Set next update
-		myT.update()
-
-	inp = t.readLine()
-	if inp != "":
-		ard.write(inp)
-	time.sleep(0.1)
+if __name__ == '__main__':
+	sensorUnits = {'T': 'FLOAT', 'H' : 'FLOAT', 'P' : 'FLOAT', 'HI' : 'FLOAT'}
+	
+	s = station(sensorUnits)
+	s.enableSqlitedb()
+	s.setTimeDatabaseUpdates(0,5,0)
+	s.enableUsbArduino('ttyACM0', 57600)
+	s.run()
 
 		

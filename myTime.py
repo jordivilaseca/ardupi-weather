@@ -3,17 +3,25 @@ from datetime import timedelta
 from datetime import time
 
 class myTime:
-	def __init__(self, h, m, s):
-		self.updateTime = timedelta(hours = h, minutes = m, seconds = s)
-		self.lastUpdateDate = myTime.getCurrentDate()
-		self.nextUpdateTime = myTime.getCurrentTime()
-		self.update()
 
 	def getCurrentDate():
 		return datetime.now().date()
 
 	def getCurrentTime():
 		return datetime.now()
+
+	def __init__(self, h=0, m=0, s=0):
+		if h == 0 and m == 0 and s == 0:
+			self.updates = False
+		else:
+			self.updateTime = timedelta(hours = h, minutes = m, seconds = s)
+			self.lastUpdateDate = myTime.getCurrentDate()
+			self.nextUpdateTime = myTime.getCurrentTime()
+			self.update()
+			self.updates = True
+
+	def setTimeUpdates(self, h, m, s):
+		self.__init__(h, m, s)
 
 	def update(self):
 		self.nextUpdateTime += self.updateTime

@@ -2,10 +2,10 @@ import pymongo
 
 
 class mongodb:
-	def __init__(self, server, port):
+	def __init__(self, server, port, dbName):
 		self.server = server
 		self.port = port
-		self.dbName = 'weatherStationDB'
+		self.dbName = dbName
 
 		try:
 			self.client=pymongo.MongoClient(server,port)

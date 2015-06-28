@@ -10,22 +10,23 @@ class databaseController:
 		self.type = 'sqlite'
 
 	def enableMongodb(self, dbName, server='localhost',port=27017):
-		self.db = mongodb.mongodb(server,port)
+		self.db = mongodb.mongodb(server, port, dbName)
 		self.type = 'mongo'
 
-	def createDataContainer(self, containerName, dataTitles):
+	def createDataContainer(self, containerName, dataUnitsDic):
 		if self.type == 'sqlite':
-			self.db.createTable(containerName, dataTitles)
+			header = [var + ' ' + vType for var, vType in dataUnitsDic.items()]
+			self.db.createTable(containerName, header)
 		elif self.type == 'mongo':
 			pass
 		else:
 			print('Unable to create a data container, there is no database enabled')
 
-	def insertDataEntry(self, containerName, header, values):
+	def insertDataEntry(self, containerName, valuesDict):
 		if self.type == 'sqlite':
-			self.db.insert(containerName, header, values)
+			self.db.insert(containerName, valuesDict.keys(), valuesDict.values())
 		elif self.type == 'mongo':
-			self.db.insert(containerName, dict(zip(header, values)))
+			self.db.insert(containerName, valuesDict)
 		else:
 			print('Unable to insert data to a data container, there is no database enabled')
 		
