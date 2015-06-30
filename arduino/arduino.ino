@@ -128,8 +128,11 @@ void update(int type, int pin) {
 
 void updateAll() {
   for (int i = 0; i < count(updateTimes); i++) {
-    unsigned long actTime = millis();
-    if (actTime - lastUpdate[i]  > updateTimes[i]) {
+    unsigned long currentTime = millis();
+    if (currentTime < lastUpdate[i]) {
+      lastUpdate[i] = 0;
+    }
+    else if (currentTime - lastUpdate[i]  > updateTimes[i]) {
       update(types[i], pins[i]);
       lastUpdate[i] += updateTimes[i];
     }
