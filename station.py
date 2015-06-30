@@ -4,7 +4,7 @@ from arduino import arduino
 from database import databaseController
 import os
 from terminal import terminal
-from myTime import myTime
+from alarm import alarm
 from datetime import datetime
 import time
 
@@ -47,7 +47,21 @@ class station:
 
 		self.dbc = databaseController.databaseController()
 
-		self.myT = myTime()
+		self.functions = {}
+
+		self.alarms = alarm()
+
+	def updateSensorsData(self):
+		valuesDict = processSensors(self.sensorSum, self.sensorNum, self.sensorValueList)
+		self.dbc.insertDataEntry('sensorsData', valuesDict)
+		print('Inserted data to database')
+
+		# Reset data
+		self.sensorSum = dict.fromkeys(self.sensorSum, 0)
+		self.sensorNum = dict.fromkeys(self.sensorNum, 0)
+
+		# Set next update
+		self.alarms.update(['updateSensorsData'])
 
 	def enableSqlitedb(self, path=os.path.dirname(os.path.realpath(__file__)) + "/data/weatherStationDB"):
 		self.dbSensorsName = path.split('/')[-1]
@@ -63,12 +77,15 @@ class station:
 		self.ard = arduino(port, baud, self.sensorUnits)
 
 	def setTimeDatabaseUpdates(self, h, m, s):
-		self.myT.setTimeUpdates(h, m, s)
+		self.alarms.add('updateSensorsData', 0, h, m, s)
+		self.functions['updateSensorsData'] = self.updateSensorsData
 
 	def run(self):
 		t = terminal()
 
 		while True:
+
+			# Read data from Arduino and update the partial data
 			sensor, valueType, value = self.ard.readInput()
 			if (len(sensor) > 0):
 				if valueType in self.sensorValueList:
@@ -76,21 +93,16 @@ class station:
 					self.sensorNum[valueType] += 1
 					printSensor(sensor, value)
 
-			if (self.myT.isUpdateTime()):
-				valuesDict = processSensors(self.sensorSum, self.sensorNum, self.sensorValueList)
-				self.dbc.insertDataEntry('sensorsData', valuesDict)
-				print('Inserted data')
+			# Execute functions when it is necessary
+			toDo = self.alarms.getThingsToDo()
+			for idFunc in toDo:
+				self.functions[idFunc]()
 
-				# Reset data
-				self.sensorSum = dict.fromkeys(self.sensorSum, 0)
-				self.sensorNum = dict.fromkeys(self.sensorNum, 0)
-
-				# Set next update
-				self.myT.update()
-
+			# Read from terminal
 			inp = t.readLine()
 			if inp != "":
 				self.ard.write(inp)
+
 			time.sleep(0.1)
 
 if __name__ == '__main__':
