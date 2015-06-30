@@ -1,8 +1,9 @@
 from datetime import datetime
 from datetime import timedelta
 from datetime import time
+import time
 
-class myTime:
+class alarm:
 
 	def getCurrentDate():
 		return datetime.now().date()
@@ -10,29 +11,21 @@ class myTime:
 	def getCurrentTime():
 		return datetime.now()
 
-	def __init__(self, h=0, m=0, s=0):
-		if h == 0 and m == 0 and s == 0:
-			self.updates = False
-		else:
-			self.updateTime = timedelta(hours = h, minutes = m, seconds = s)
-			self.lastUpdateDate = myTime.getCurrentDate()
-			self.nextUpdateTime = myTime.getCurrentTime()
-			self.update()
-			self.updates = True
+	def __init__(self):
+		self.nextUpdates = {}
+		self.updateTimes = {}
 
-	def setTimeUpdates(self, h, m, s):
-		self.__init__(h, m, s)
+	def add(self, id, d, h, m, s):
+			self.nextUpdates[id] = alarm.getCurrentTime()
+			self.updateTimes[id] = timedelta(days = d, hours = h, minutes = m, seconds = s)
 
-	def update(self):
-		self.nextUpdateTime += self.updateTime
+	def update(self, ids):
+		for id in ids:
+			self.nextUpdates[id] += self.updateTimes[id]
 
-	def isUpdateTime(self):
-		return self.nextUpdateTime <= myTime.getCurrentTime()
+	def isUpdateTime(self,id):
+		return self.nextUpdates[id] <= alarm.getCurrentTime()
 
-	def isDifferentDay(self):
-		currDate = myTime.getCurrentDate()
-		v = self.lastUpdateDate != currDate
-		if not v:
-			self.lastUpdateDate = currDate
-		return v
+	def getElementsToUpdate(self):
+		return list(filter(self.isUpdateTime, self.nextUpdates.keys()))
 		
