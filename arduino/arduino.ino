@@ -1,6 +1,8 @@
 #include <Wire.h>
 #include <SFE_BMP180.h>
-#include "DHT.h"
+#include <RCSwitch.h>
+#include <BH1750.h>
+#include <DHT.h>
 
 #define count(x) sizeof(x)/sizeof(unsigned long)
 #define groundPin A0
@@ -13,24 +15,27 @@
 #define DHT22T  2   // Temperature
 #define DHT22H  3   // Humidity
 #define DHT22HI 4   // Heat Index
+#define BH1750L 5   // Light sensor
 
 #define NOTUSED -1  // For BMP180/DHT22 sensor.
 
 #define DHTTYPE DHT22
-#define DHTPIN  4
+#define DHTPIN  6
 
 SFE_BMP180 pressure;
 DHT dht(DHTPIN, DHTTYPE);
+BH1750 light;
+RCSwitch mySwitch = RCSwitch();
 
-int types[] = {BMP180T,BMP180P,DHT22T,DHT22H,DHT22HI};
-unsigned long lastUpdate[] = {0,0,0,0,0};
-unsigned long updateTimes[] = {30000,60000,30000,30000,60000};
-int pins[] = {NOTUSED,NOTUSED,NOTUSED,NOTUSED,NOTUSED};
+int types[] = {BMP180T,BMP180P,DHT22T,DHT22H,DHT22HI,BH1750L};
+unsigned long lastUpdate[] = {0,0,0,0,0,0};
+unsigned long updateTimes[] = {30000,60000,30000,30000,60000,60000};
+int pins[] = {NOTUSED,NOTUSED,NOTUSED,NOTUSED,NOTUSED,NOTUSED};
 
 int secureAnalogRead(int pin) {
-  //delay(0.01);
-  //analogRead(groundPin);
-  //delay(0.01);
+  delay(0.01);
+  analogRead(groundPin);
+  delay(0.01);
   return analogRead(pin);
   
 }
@@ -71,6 +76,10 @@ int ldr(int pin) {
   return map(secureAnalogRead(pin), 0, 1023, 0, 100);
 }
 
+uint16_t BH1750Light() {
+  return light.readLightLevel();
+}
+
 void sendCommand(String c, String v) {
   Serial.println(c);
   Serial.println(v);
@@ -81,46 +90,52 @@ void update(int type, int pin) {
   switch (type) {
     case BMP180T:
       {
-      double t;
-      c = "BMP180_T";
-      if (bmp180Temperature(t)) v = String(t);
-      else v = c + " Error";
-      break;
+        double t;
+        c = "BMP180_T";
+        if (bmp180Temperature(t)) v = String(t);
+        else v = c + " Error";
+        break;
       }
 
     case BMP180P:
       {
-      double p;
-      c = "BMP180_P";
-      if (bmp180Pressure(p)) v = String(p);
-      else v = c + " Error";
-      break;
+        double p;
+        c = "BMP180_P";
+        if (bmp180Pressure(p)) v = String(p);
+        else v = c + " Error";
+        break;
       }
 
     case DHT22T:
       {
-      float t = dht.readTemperature();    // Default temperature unit is ºC.
-      c = "DHT22_T";
-      v = String(t);
-      break;
+        float t = dht.readTemperature();    // Default temperature unit is ºC.
+        c = "DHT22_T";
+        v = String(t);
+        break;
       }
 
     case DHT22H:
       {
-      float h = dht.readHumidity();
-      c = "DHT22_H";
-      v = String(h);
-      break;
+        float h = dht.readHumidity();
+        c = "DHT22_H";
+        v = String(h);
+        break;
       }
     case DHT22HI:
       {
-      float h, t, hi;
-      h = dht.readHumidity();
-      t = dht.readTemperature(true);    // We need value in farenheit.
-      hi = dht.computeHeatIndex(t,h);
-      c = "DHT22_HI";
-      v = String(dht.convertFtoC(hi));
-      break;
+        float h, t, hi;
+        h = dht.readHumidity();
+        t = dht.readTemperature(true);    // We need value in farenheit.
+        hi = dht.computeHeatIndex(t,h);
+        c = "DHT22_HI";
+        v = String(dht.convertFtoC(hi));
+        break;
+      }
+    case BH1750L:
+      {
+        c = "BH1750_L";
+        v = String(BH1750Light());
+        break;
       }
   }
   sendCommand(c, v);
@@ -140,7 +155,7 @@ void updateAll() {
 }
 
 // DUMP FUNCTIONS
-
+/*
 String inpBuffer = "";
 
 String readCommand() {
@@ -172,22 +187,21 @@ void dump() {
     updateTimes[sensor] = Serial.parseInt(); 
     pins[sensor] = Serial.parseInt();   
   }
-}
+}*/
 
 void setup() {
-  Serial.begin(9600); // set the baud rate
-  if (pressure.begin()) Serial.println("BMP180 init success");
-  else Serial.println("BMP180 init fail\n\n");
+  Serial.begin(57600); // set the baud rate
+  pressure.begin();
   dht.begin();
+  light.begin();
   
   for (int i = 0; i < count(updateTimes); i++) {
-    pinMode(pins[i], INPUT);
     update(types[i],pins[i]);
   }
 }
 
 void loop() {
   updateAll();
-  dump();
+  //dump();
 }
 

@@ -106,7 +106,7 @@ class station:
 			time.sleep(0.1)
 
 if __name__ == '__main__':
-	sensorUnits = {'T': 'FLOAT', 'H' : 'FLOAT', 'P' : 'FLOAT', 'HI' : 'FLOAT'}
+	sensorUnits = {'T': 'FLOAT', 'H' : 'FLOAT', 'P' : 'FLOAT', 'HI' : 'FLOAT','L' : 'INTEGER'}
 	
 	s = station(sensorUnits)
 	s.enableSqlitedb()
