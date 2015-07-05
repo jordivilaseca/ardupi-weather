@@ -5,11 +5,11 @@ class databaseController:
 	def __init__(self):
 		self.type = ''
 
-	def enableSqlitedb(self,path):
+	def enableSqlite(self,path):
 		self.db = sqlitedb.sqlitedb(path)
 		self.type = 'sqlite'
 
-	def enableMongodb(self, dbName, server='localhost',port=27017):
+	def enableMongo(self, dbName, server='localhost',port=27017):
 		self.db = mongodb.mongodb(server, port, dbName)
 		self.type = 'mongo'
 

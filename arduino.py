@@ -29,16 +29,12 @@ class arduino:
 	def readInput(self):
 		sensor = self.readString()
 		if (len(sensor) > 0):
-			valueType = self.getValueType(sensor)
-			if (valueType in self.sensors):
-				value = self.func[self.sensors[valueType]]()
-				return [sensor, valueType, value]
+			if (sensor in self.sensors):
+				value = self.func[self.sensors[sensor]]()
+				return [sensor, value]
 			else:
 				print ("Not valid input: ", sensor)
-		return ["","",""]
-
-	def getValueType(self, sensor):
-		return sensor.split("_")[1]
+		return ["",""]
 
 	def write(self, s):
 		com = s.split()

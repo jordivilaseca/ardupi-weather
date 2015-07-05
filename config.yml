@@ -1,0 +1,33 @@
+arduino:
+    sensors : 
+        {
+            BMP180T : "Temperature",
+            BMP180P : "Pressure",
+            DHT22T  : "Temperature",
+            DHT22H  : "Humidity",
+            DHT22HI : "HeatIndex",
+            BH1750  : "Lux"
+        }
+    usedConnection: "usb"
+
+    usb: {port : 'ttyACM0', baud : 57600}
+
+database:
+    name : 'weatherStation'
+    units :
+        {
+            Temperature : "FLOAT",
+            Pressure    : "FLOAT",
+            Humidity    : "FLOAT",
+            HeatIndex   : "FLOAT",
+            Lux         : "INTEGER"
+        }
+
+    used: "mongo"
+    sqlite: {path : "default"}
+    mongo : {server: "localhost", port : 27017}
+
+    historyDB:
+        enable: yes
+        name: "history"
+        updateEvery : {d : 0, h : 0, m : 1, s : 30}
