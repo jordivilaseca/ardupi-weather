@@ -30,8 +30,11 @@ class arduino:
 		sensor = self.readString()
 		if (len(sensor) > 0):
 			if (sensor in self.sensors):
-				value = self.func[self.sensors[sensor]]()
-				return [sensor, value]
+				try:
+					value = self.func[self.sensors[sensor]]()
+					return [sensor,value]
+				except ValueError:
+					print ("Not valid input: ", sensor, value)
 			else:
 				print ("Not valid input: ", sensor)
 		return ["",""]
