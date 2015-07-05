@@ -91,7 +91,7 @@ void update(int type, int pin) {
     case BMP180T:
       {
         double t;
-        c = "BMP180_T";
+        c = "BMP180T";
         if (bmp180Temperature(t)) v = String(t);
         else v = c + " Error";
         break;
@@ -100,7 +100,7 @@ void update(int type, int pin) {
     case BMP180P:
       {
         double p;
-        c = "BMP180_P";
+        c = "BMP180P";
         if (bmp180Pressure(p)) v = String(p);
         else v = c + " Error";
         break;
@@ -109,7 +109,7 @@ void update(int type, int pin) {
     case DHT22T:
       {
         float t = dht.readTemperature();    // Default temperature unit is ºC.
-        c = "DHT22_T";
+        c = "DHT22T";
         v = String(t);
         break;
       }
@@ -117,7 +117,7 @@ void update(int type, int pin) {
     case DHT22H:
       {
         float h = dht.readHumidity();
-        c = "DHT22_H";
+        c = "DHT22H";
         v = String(h);
         break;
       }
@@ -127,13 +127,13 @@ void update(int type, int pin) {
         h = dht.readHumidity();
         t = dht.readTemperature(true);    // We need value in farenheit.
         hi = dht.computeHeatIndex(t,h);
-        c = "DHT22_HI";
+        c = "DHT22HI";
         v = String(dht.convertFtoC(hi));
         break;
       }
     case BH1750L:
       {
-        c = "BH1750_L";
+        c = "BH1750";
         v = String(BH1750Light());
         break;
       }
@@ -154,41 +154,6 @@ void updateAll() {
   }
 }
 
-// DUMP FUNCTIONS
-/*
-String inpBuffer = "";
-
-String readCommand() {
-  String ret = "";
-  if (Serial.available()){
-    char c;
-    while(Serial.available() && (c = Serial.read()) != '\n') {
-      inpBuffer += c;
-    }
-    if (c == '\n') {
-      ret = inpBuffer;
-      inpBuffer = "";
-    }
-  }
-  return ret;
-}
-
-void dump() {
-  String inp = readCommand();
-  if (inp == "") {
-  } else if (inp == "dump") {
-    for (int i = 0; i < count(updateTimes); i++) {
-      String com = String(i) + " " + String(types[i]) + " " + String(updateTimes[i]) + " " + String(pins[i]);
-      sendCommand("dump_pin", com);
-    }
-  } else if (inp == "modify") {
-    int sensor = Serial.parseInt();
-    types[sensor] = Serial.parseInt();
-    updateTimes[sensor] = Serial.parseInt(); 
-    pins[sensor] = Serial.parseInt();   
-  }
-}*/
-
 void setup() {
   Serial.begin(57600); // set the baud rate
   pressure.begin();
@@ -202,6 +167,5 @@ void setup() {
 
 void loop() {
   updateAll();
-  //dump();
 }
 
