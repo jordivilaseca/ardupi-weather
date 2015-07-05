@@ -16,9 +16,13 @@ class alarm:
 		self.updateTimes = {}
 
 	def add(self, id, d, h, m, s):
-			self.nextUpdates[id] = getCurrentTime()
-			self.updateTimes[id] = timedelta(days = d, hours = h, minutes = m, seconds = s)
-			self.update([id])
+		self.nextUpdates[id] = getCurrentTime()
+		self.updateTimes[id] = timedelta(days = d, hours = h, minutes = m, seconds = s)
+		self.update([id])
+
+	def addDaily(self, id):
+		self.nextUpdates[id] = datetime.combine(getCurrentDate() + timedelta(days=1), datetime.min.time())
+		self.updateTimes[id] = timedelta(days = 1)
 
 	def update(self, ids):
 		for id in ids:
