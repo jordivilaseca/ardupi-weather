@@ -5,13 +5,19 @@ from database import databaseController
 import os
 from terminal import terminal
 from alarm import alarm
-from datetime import datetime
+import datetime
 import time
 import yaml
 import json
 
-def getFullDate():
-	return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+def getDatetime():
+	return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+def getDate():
+	return datetime.datetime.now().strftime("%Y-%m-%d")
+
+def formatDatetime(date):
+	return date.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
 def getPath(path, fileName):
 	defaultPath = os.path.dirname(os.path.realpath(__file__)) + '/data'
@@ -19,11 +25,11 @@ def getPath(path, fileName):
 	return newPath + '/' + fileName
 
 def printSensor(sensor, value):
-	date = getFullDate()
+	date = getDatetime()
 	print (date, sensor, value)
 
 def processSensors(sensSum, sensNum):
-	d = {'Date' : getFullDate()}
+	d = {'Date' : getDatetime()}
 	for elem in sensSum.keys():
 		d[elem]= round(sensSum[elem]/sensNum[elem], 1)
 	return d
@@ -41,11 +47,8 @@ class station:
 		self.sensorData = cfg['arduino']['sensors']
 		self.sensorNamesList = list(self.sensorData.keys())
 
-		self.units = cfg['database']['units']
-		self.sensorUnits = {key: self.units[value] for key,value in self.sensorData.items()}		
-
-		self.dbHeaderUnits = {'Date' : 'TEXT'}
-		self.dbHeaderUnits.update(self.units)
+		self.sensorTypes = cfg['database']['units']
+		self.sensorUnits = {key: self.sensorTypes[value] for key,value in self.sensorData.items()}		
 
 		#Configure arduino
 		self.configureArduino(cfg['arduino'])
@@ -55,6 +58,9 @@ class station:
 
 		#Initialize history database
 		self.initialitzeHistoryDatabase(cfg['database']['historyDB'])
+
+		#Initialize daily history database
+		self.initializeDailyHistoryDatabase(cfg['database']['dailyHistoryDB'], cfg['database']['historyDB'])
 
 		#Initialize last sensor values record
 		self.initialitzeCurrentData(cfg['database']['currentData'])
@@ -86,10 +92,13 @@ class station:
 
 	def initialitzeHistoryDatabase(self, history):
 		if history['enable']:
-			self.dbc.createDataContainer(history['name'], self.dbHeaderUnits)
+			self.dbHistoryHeader = {'date' : 'TEXT'}
+			self.dbHistoryHeader.update(self.sensorTypes)
+
 			self.historyDBName = history['name']
-			self.sensorSum = dict.fromkeys(self.units, 0)
-			self.sensorNum = dict.fromkeys(self.units, 0)
+			self.dbc.createDataContainer(self.historyDBName, self.dbHistoryHeader)
+			self.sensorSum = dict.fromkeys(self.sensorTypes, 0)
+			self.sensorNum = dict.fromkeys(self.sensorTypes, 0)
 
 			update = history['updateEvery']
 			self.alarms.add('updateHistoryDatabase', update['d'], update['h'], update['m'], update['s'])
@@ -97,9 +106,27 @@ class station:
 
 			self.newValueFunctions.append(self.updateHistoryData)
 
+	def initializeDailyHistoryDatabase(self, daily, history):
+		if daily['enable']:
+			if not history['enable']:
+				print ("Daily history can not be enabled because history in no enabled")
+				return
+
+			self.dbDailyHistoryHeader = {'date' : 'TEXT'}
+			self.dbDailyHistoryHeader.update({key + 'MAX': value for key,value in self.sensorTypes.items()})
+			self.dbDailyHistoryHeader.update({key + 'MIN': value for key,value in self.sensorTypes.items()})
+			self.dbDailyHistoryHeader.update({key + 'AVG': value for key,value in self.sensorTypes.items()})
+
+			self.dailyHistoryDBName = daily['name']
+			self.dbc.createDataContainer(self.dailyHistoryDBName, self.dbDailyHistoryHeader)
+
+			self.alarms.addDaily('updateDailyHistoryDatabase')
+			self.generalFunctions['updateDailyHistoryDatabase'] = self.updateDailyHistoryDatabase
+
 	def initialitzeCurrentData(self, currentData):
 		if currentData['enable']:
 			self.currentDataFile = getPath(currentData['path'], currentData['name'])
+
 			self.currentDataValues = {}
 
 			update = currentData['updateEvery']
@@ -130,7 +157,7 @@ class station:
 	def updateHistoryDatabase(self):
 		valuesDict = processSensors(self.sensorSum, self.sensorNum)
 		self.dbc.insertDataEntry(self.historyDBName, valuesDict)
-		print('Inserted data to database')
+		print('Inserted data to history')
 
 		# Reset data
 		self.sensorSum = dict.fromkeys(self.sensorSum, 0)
@@ -138,6 +165,40 @@ class station:
 
 		# Set next update
 		self.alarms.update(['updateHistoryDatabase'])
+
+	def updateDailyHistoryDatabase(self):
+		# Query to database
+		lastDay = datetime.date.today() - datetime.timedelta(days=1)
+		minVal = datetime.datetime.combine(lastDay, datetime.datetime.min.time())
+		maxVal = datetime.datetime.combine(lastDay, datetime.datetime.max.time())
+		data = self.dbc.queryBetweenValues(self.historyDBName, 'date', formatDatetime(minVal), formatDatetime(maxVal))
+		dailyData = dict.fromkeys(self.dbDailyHistoryHeader, 0)
+		dailyData['date'] = lastDay
+
+		# Calculus of MIN, MAX and addition of all values to AVG
+		i=0
+		for entry in data:
+			for key,value in entry.items():
+				if key != 'date':
+					if i == 0:
+						dailyData[key + 'MIN'] = value
+						dailyData[key + 'MAX'] = value
+						dailyData[key + 'AVG'] = value
+					else:
+						dailyData[key + 'MIN'] = min(dailyData[key + 'MIN'], value)
+						dailyData[key + 'MAX'] = max(dailyData[key + 'MAX'], value)
+						dailyData[key + 'AVG'] += value
+			i += 1
+
+		# Calculus of AVG
+		for key in self.sensorTypes.keys():
+			dailyData[key + 'AVG'] = dailyData[key + 'AVG']/i
+
+		self.dbc.insertDataEntry(self.dailyHistoryDBName, dailyData)
+		print('Inserted data to daily history')
+
+		# set next update
+		self.alarms.update(['updateDailyHistoryDatabase'])
 
 	def run(self):
 		while True:
