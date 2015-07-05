@@ -29,4 +29,7 @@ class databaseController:
 			self.db.insert(containerName, valuesDict)
 		else:
 			print('Unable to insert data to a data container, there is no database enabled')
+
+	def queryBetweenValues(self, containerName, attribute, minValue, maxValue):
+		return self.db.queryBetweenValues(containerName, attribute, minValue, maxValue)
 		
