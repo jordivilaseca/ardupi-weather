@@ -1,15 +1,16 @@
-from database import mongodb
-from database import sqlitedb
-
 class databaseController:
 	def __init__(self):
 		self.type = ''
 
 	def enableSqlite(self,path):
+		from database import sqlitedb
+
 		self.db = sqlitedb.sqlitedb(path)
 		self.type = 'sqlite'
 
 	def enableMongo(self, dbName, server='localhost',port=27017):
+		from database import mongodb
+		
 		self.db = mongodb.mongodb(server, port, dbName)
 		self.type = 'mongo'
 
