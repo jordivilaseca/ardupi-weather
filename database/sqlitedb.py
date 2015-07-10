@@ -26,5 +26,11 @@ class sqlitedb:
 		colname = [ d[0] for d in query.description ]
 		return [ dict(zip(colname, r)) for r in query.fetchall() ]
 
+	def queryAll(self, tableName):
+		sentence = "SELECT * FROM " + tableName
+		query = self.conn.execute(sentence)
+		colname = [ d[0] for d in query.description ]
+		return [dict(zip(colname, r)) for r in query.fetchall()]
+
 	def close():
 		self.conn.close()

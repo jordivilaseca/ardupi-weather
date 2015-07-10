@@ -32,4 +32,7 @@ class databaseController:
 
 	def queryBetweenValues(self, containerName, attribute, minValue, maxValue):
 		return self.db.queryBetweenValues(containerName, attribute, minValue, maxValue)
+
+	def queryAll(self, containerName):
+		return self.db.queryAll(containerName)
 		

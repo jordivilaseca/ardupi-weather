@@ -28,6 +28,10 @@ class mongodb:
 		coll = self.getCollection(dbCollection)
 		return list(coll.find(queryDic))
 
+	def queryAll(self, dbCollection):
+		coll = self.getCollection(dbCollection)
+		return list(coll.find())
+
 	def queryBetweenValues(self, dbCollection, attribute, minValue, maxValue):
 		coll = self.getCollection(dbCollection)
 		return list(coll.find({attribute: {"$gte": minValue, "$lte": maxValue}}))
