@@ -14,7 +14,7 @@ arduino:
 
 database:
     name : 'weatherStation'
-    units :
+    values :
         {
             temperature : "FLOAT",
             pressure    : "FLOAT",
@@ -42,3 +42,17 @@ database:
         path: "default"
         name: "currentData.json"
         updateEvery: {d: 0, h: 0, m: 1, s: 0}
+
+webserver:
+    enable: yes
+    charts:
+        history:
+            enable: yes
+            path: "default"
+            panels:
+                [
+                    {name : "Temperature", type : "spline", values : ["temperature","heatIndex"], units : "ºC"},
+                    {name : "Pressure",    type : "spline", values : ["pressure"],                units : "Pa"},
+                    {name : "Humidity",    type : "spline", values : ["humidity"],                units : "%"},
+                    {name : "Illuminance", type : "spline", values : ["lux"],                     units : "Lux"}
+                ]

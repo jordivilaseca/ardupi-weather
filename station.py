@@ -24,12 +24,31 @@ def getPath(path, fileName):
 	newPath = defaultPath if path == 'default' else path
 	return newPath + '/' + fileName
 
+def jsonTimestamp(stringTime):
+	return time.mktime(datetime.datetime.strptime(stringTime, '%Y-%m-%d %H:%M:%S.%f').timetuple())*1000
+
+def updateJsonFiles(jsonHistoryFilesPath, jsonHistoryFiles, valuesDict):
+	for f in jsonHistoryFiles:
+		filePath = getPath(jsonHistoryFilesPath, f) + '.json'
+
+		# check if the file exists, in case it does not exists we create it
+		if not os.path.exists(filePath):
+			with open(filePath, 'w+') as jsonFile:
+				jsonFile.write('[]')
+
+		# update data
+		with open(filePath, 'r') as jsonFile:
+			data = json.load(jsonFile)
+		data.append([jsonTimestamp(valuesDict['date']),valuesDict[f]])
+		with open(filePath, 'w') as jsonFile:
+			json.dump(data, jsonFile)
+
 def printSensor(sensor, value):
 	date = getDatetime()
 	print (date, sensor, value)
 
 def processSensors(sensSum, sensNum):
-	d = {'Date' : getDatetime()}
+	d = {'date' : getDatetime()}
 	for elem in sensSum.keys():
 		d[elem]= round(sensSum[elem]/sensNum[elem], 1)
 	return d
@@ -47,23 +66,32 @@ class station:
 		self.sensorData = cfg['arduino']['sensors']
 		self.sensorNamesList = list(self.sensorData.keys())
 
-		self.sensorTypes = cfg['database']['units']
+		self.sensorTypes = cfg['database']['values']
 		self.sensorUnits = {key: self.sensorTypes[value] for key,value in self.sensorData.items()}		
 
 		#Configure arduino
-		self.configureArduino(cfg['arduino'])
+		arduinoCfg = cfg['arduino']
+		self.configureArduino(arduinoCfg)
 
 		#Configure database
-		self.configureDatabase(cfg['database'])
+		databaseCfg = cfg['database']
+		self.configureDatabase(databaseCfg)
 
 		#Initialize history database
-		self.initialitzeHistoryDatabase(cfg['database']['historyDB'])
+		historyCfg = databaseCfg['historyDB']
+		self.initialitzeHistoryDatabase(historyCfg)
 
 		#Initialize daily history database
-		self.initializeDailyHistoryDatabase(cfg['database']['dailyHistoryDB'], cfg['database']['historyDB'])
+		dailyHistoryCfg = databaseCfg['dailyHistoryDB']
+		self.initializeDailyHistoryDatabase(dailyHistoryCfg, historyCfg)
 
 		#Initialize last sensor values record
-		self.initialitzeCurrentData(cfg['database']['currentData'])
+		currentDataCfg = databaseCfg['currentData']
+		self.initialitzeCurrentData(currentDataCfg)
+
+		#configure station for webserver support
+		webserverCfg = cfg['webserver']
+		self.configureWebserverSupport(webserverCfg, historyCfg, dailyHistoryCfg, currentDataCfg)
 
 		#Initialize terminal input
 		self.t = terminal()
@@ -101,15 +129,15 @@ class station:
 			self.sensorNum = dict.fromkeys(self.sensorTypes, 0)
 
 			update = history['updateEvery']
-			self.alarms.add('updateHistoryDatabase', update['d'], update['h'], update['m'], update['s'])
-			self.generalFunctions['updateHistoryDatabase'] = self.updateHistoryDatabase
+			self.alarms.add('updateHistory', update['d'], update['h'], update['m'], update['s'])
+			self.generalFunctions['updateHistory'] = self.updateHistory
 
 			self.newValueFunctions.append(self.updateHistoryData)
 
 	def initializeDailyHistoryDatabase(self, daily, history):
 		if daily['enable']:
 			if not history['enable']:
-				print ("Daily history can not be enabled because history in no enabled")
+				print ("Daily history cannot be enabled because 'history' is not enabled")
 				return
 
 			self.dbDailyHistoryHeader = {'date' : 'TEXT'}
@@ -135,6 +163,27 @@ class station:
 
 			self.newValueFunctions.append(self.updateCurrentData)
 
+	def configureWebserverSupport(self, webserver, history, dailyHistory, currentData):
+		if webserver['enable']:
+			if not (history['enable'] and dailyHistory['enable'] and currentData['enable']):
+				print("webserver cannot ben enabled because 'history' or 'dailyHistory' or 'currentData' are not enabled")
+				return
+
+			self.configureWebserverCharts(webserver['charts'])
+
+	def configureWebserverCharts(self, charts):
+
+		# Configure structures for history chart
+		historyChart = charts['history']
+		if historyChart['enable']:
+			self.jsonHistoryFilesPath = historyChart['path']
+			self.jsonHistoryFiles = []
+			for panel in historyChart['panels']:
+				self.jsonHistoryFiles.extend(list(panel['values']))
+			self.jsonHistory = True
+		else:
+			self.jsonHistory = False
+
 	#Functions to execute when a new sensor value arrives
 	def updateCurrentData(self, valueType, value):
 		self.currentDataValues[valueType] = value
@@ -154,9 +203,15 @@ class station:
 		# Set next update
 		self.alarms.update(['updateCurrentData'])
 
-	def updateHistoryDatabase(self):
+	def updateHistory(self):
 		valuesDict = processSensors(self.sensorSum, self.sensorNum)
+
+		# Update database
 		self.dbc.insertDataEntry(self.historyDBName, valuesDict)
+
+		# Update json file
+		if self.jsonHistory:
+			updateJsonFiles(self.jsonHistoryFilesPath, self.jsonHistoryFiles, valuesDict)
 		print('Inserted data to history')
 
 		# Reset data
@@ -164,7 +219,7 @@ class station:
 		self.sensorNum = dict.fromkeys(self.sensorNum, 0)
 
 		# Set next update
-		self.alarms.update(['updateHistoryDatabase'])
+		self.alarms.update(['updateHistory'])
 
 	def updateDailyHistoryDatabase(self):
 		# Query to database

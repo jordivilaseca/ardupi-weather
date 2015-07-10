@@ -2,46 +2,48 @@ from flask import Flask, render_template
 
 import sys
 import os
-sys.path.append(os.path.abspath('..'))
-from database import databaseController
-
 import yaml
+import json
  
 app = Flask(__name__)
 
-global dbc
-global databaseName
+def getPath(fileName):
+	return "/home/jordivilaseca/Documents/estacioMeteorologica/data/" + fileName
 
-def getPath(path, fileName):
-	return "/home/jordivilaseca/Documents/estacioMeteorologica/data/weatherStation"
+def readJsonData(filePath):
+	with open(filePath, 'r') as jsonFile:
+		data = json.load(jsonFile)
+	return data
 
 def readConfiguration():
 	with open("./../config.yml", 'r') as ymlfile:
-		cfg = yaml.load(ymlfile)
+		ymlData = yaml.load(ymlfile)
+		cfg = dict(ymlData['webserver'])
+	return dict(cfg)
 
-	configureDatabase(cfg['database'])
+def createChart():
+	pass
 
-def configureDatabase(database):
-	dbc = databaseController.databaseController()
-	databaseName = database['name']
-
-	usedDatabase = database['used']
-	db = database[usedDatabase]
-	if usedDatabase == 'sqlite':
-		dbc.enableSqlite(getPath(db['path'], databaseName))
-	elif usedDatabase == 'mongo':
-		dbc.enableMongo(databaseName, db['server'], db['port'])
-	else:
-		'Unknown database name'   
- 
 @app.route('/')
-def home(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
-	chart = {"renderTo": chartID, "type": chart_type, "height": chart_height,}
+def home(chartID = 'chart_ID', chart_height = 700):
+	cfg = readConfiguration()
+	chart = {"height": chart_height}
 	rangeSelector = {"selected": 1}
-	series = [{"name": 'Label1', "data": [[i*i, i] for i in range(200)]}]
+	series = []
+	yAxis = []
+	panels = cfg['charts']['history']['panels']
+	height = 100/len(panels)
+	top = 0
+	axisNum = 0
+	for panel in panels:
+		for f in panel['values']:
+			data = readJsonData(getPath(f) + '.json')
+			series.append({'type':panel['type'],'name':f,'data': data, 'yAxis': axisNum})
+		yAxis.append({'title': {'text': panel['name']}, 'height': str(height)+'%', 'top': str(top)+'%', 'offset': 0, 'labels': {'align': 'right', 'x': -3}})
+		top += height
+		axisNum += 1
 	title = {"text": 'My Title'}
-	xAxis = {"categories": ['xAxis Data1']}
-	yAxis = {"title": {"text": 'yAxis Label'}}
+	xAxis = {"categories": ['Time']}
 	return render_template('index.html', image_name='static/img/header.jpg', rangeSelector=rangeSelector, chartID=chartID, chart=chart, series=series, title=title, xAxis=xAxis, yAxis=yAxis)
  
 if __name__ == '__main__':
