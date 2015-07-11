@@ -2,36 +2,27 @@ from flask import Flask, render_template
 
 import sys
 import os
-import yaml
 import json
- 
-app = Flask(__name__)
+from config import cfg, dataPath, templatesFlaskPath, staticFlaskPath
 
-def getPath(fileName):
-	return "/home/jordivilaseca/Documents/estacioMeteorologica/data/" + fileName
+app = Flask(__name__,static_folder=staticFlaskPath,template_folder=templatesFlaskPath)
 
 def readJsonData(filePath):
 	with open(filePath, 'r') as jsonFile:
 		data = json.load(jsonFile)
 	return data
 
-def readConfiguration():
-	with open("./../config.yml", 'r') as ymlfile:
-		ymlData = yaml.load(ymlfile)
-		cfg = dict(ymlData['webserver'])
-	return dict(cfg)
-
-def createChart(cfg):
+def createChart():
 	chart = {}
 	series = []
 	yAxis = []
-	panels = cfg['charts']['history']['panels']
+	panels = cfg['webserver']['charts']['history']['panels']
 	height = 100/len(panels)
 	top = 0
 	axisNum = 0
 	for panel in panels:
 		for f in panel['values']:
-			data = readJsonData(getPath(f) + '.json')
+			data = readJsonData(dataPath + f + '.json')
 			series.append({'type':panel['type'],'name':f,'data': data, 'yAxis': axisNum})
 		yAxis.append({'title': {'text': panel['name']}, 'height': str(height)+'%', 'top': str(top)+'%', 'offset': 0, 'labels': {'align': 'right', 'x': -3}})
 		top += height
@@ -48,12 +39,8 @@ def createChart(cfg):
 
 @app.route('/')
 def home():
-	cfg = readConfiguration()
-	chart = createChart(cfg)
+	chart = createChart()
 	return render_template('index.html', image_name='static/img/header.jpg', chart=chart)
  
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=5000, passthrough_errors=True)
-	app.run(debug=True)
-
-	readConfiguration()
+	app.run(host='0.0.0.0', port=5000, debug = True)

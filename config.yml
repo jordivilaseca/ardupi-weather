@@ -48,7 +48,6 @@ webserver:
     charts:
         history:
             enable: yes
-            path: "default"
             panels:
                 [
                     {name : "Temperature", type : "spline", values : ["temperature","heatIndex"], units : "ºC"},

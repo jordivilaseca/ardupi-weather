@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from config import cfg, dataPath
 from arduino import arduino
 from database import databaseController
 import os
@@ -7,7 +8,6 @@ from terminal import terminal
 from alarm import alarm
 import datetime
 import time
-import yaml
 import json
 
 def getDatetime():
@@ -19,17 +19,12 @@ def getDate():
 def formatDatetime(date):
 	return date.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
-def getPath(path, fileName):
-	defaultPath = os.path.dirname(os.path.realpath(__file__)) + '/data'
-	newPath = defaultPath if path == 'default' else path
-	return newPath + '/' + fileName
-
 def jsonTimestamp(stringTime):
 	return time.mktime(datetime.datetime.strptime(stringTime, '%Y-%m-%d %H:%M:%S.%f').timetuple())*1000
 
-def updateJsonFiles(jsonHistoryFilesPath, jsonHistoryFiles, valuesDict):
+def updateJsonFiles(jsonHistoryFiles, valuesDict):
 	for f in jsonHistoryFiles:
-		filePath = getPath(jsonHistoryFilesPath, f) + '.json'
+		filePath = dataPath + f + '.json'
 
 		# check if the file exists, in case it does not exists we create it
 		if not os.path.exists(filePath):
@@ -59,9 +54,6 @@ class station:
 		self.generalFunctions = {}
 		self.newValueFunctions = []
 		self.alarms = alarm()
-
-		with open("config.yml", 'r') as ymlfile:
-			cfg = yaml.load(ymlfile)
 
 		self.sensorData = cfg['arduino']['sensors']
 		self.sensorNamesList = list(self.sensorData.keys())
@@ -112,7 +104,7 @@ class station:
 		usedDatabase = database['used']
 		db = database[usedDatabase]
 		if usedDatabase == 'sqlite':
-			self.dbc.enableSqlite(getPath(db['path'], self.databaseName))
+			self.dbc.enableSqlite(db['path'] + self.databaseName)
 		elif usedDatabase == 'mongo':
 			self.dbc.enableMongo(self.databaseName, db['server'], db['port'])
 		else:
@@ -153,7 +145,7 @@ class station:
 
 	def initialitzeCurrentData(self, currentData):
 		if currentData['enable']:
-			self.currentDataFile = getPath(currentData['path'], currentData['name'])
+			self.currentDataFile = currentData['path'] + currentData['name']
 
 			self.currentDataValues = {}
 
@@ -176,7 +168,6 @@ class station:
 		# Configure structures for history chart
 		historyChart = charts['history']
 		if historyChart['enable']:
-			self.jsonHistoryFilesPath = historyChart['path']
 			self.jsonHistoryFiles = []
 			for panel in historyChart['panels']:
 				self.jsonHistoryFiles.extend(list(panel['values']))
@@ -211,7 +202,7 @@ class station:
 
 		# Update json file
 		if self.jsonHistory:
-			updateJsonFiles(self.jsonHistoryFilesPath, self.jsonHistoryFiles, valuesDict)
+			updateJsonFiles(self.jsonHistoryFiles, valuesDict)
 		print('Inserted data to history')
 
 		# Reset data
