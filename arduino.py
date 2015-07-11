@@ -35,6 +35,7 @@ class arduino:
 					return [sensor,value]
 				except ValueError:
 					print ("Not valid input: ", sensor, value)
+					return ["",""]
 			else:
 				print ("Not valid input: ", sensor)
 		return ["",""]
