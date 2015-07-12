@@ -34,7 +34,7 @@ class arduino:
 					value = self.func[self.sensors[sensor]]()
 					return [sensor,value]
 				except ValueError:
-					print ("Not valid input: ", sensor, value)
+					print ("Not valid input")
 					return ["",""]
 			else:
 				print ("Not valid input: ", sensor)
