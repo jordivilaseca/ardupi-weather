@@ -23,7 +23,8 @@ def createChart():
 	for panel in panels:
 		for f in panel['values']:
 			data = readJsonData(dataPath + f + '.json')
-			series.append({'type':panel['type'],'name':f,'data': data, 'yAxis': axisNum})
+			tooltip = {'valueSuffix' : ' ' + panel['units']}
+			series.append({'type':panel['type'],'name':f,'data': data, 'yAxis': axisNum, 'tooltip' : tooltip})
 		yAxis.append({'title': {'text': panel['name']}, 'height': str(height)+'%', 'top': str(top)+'%', 'offset': 0, 'labels': {'align': 'right', 'x': -3}})
 		top += height
 		axisNum += 1
