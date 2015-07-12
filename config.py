@@ -2,7 +2,7 @@ import yaml
 import os
 
 appPath = os.path.dirname(os.path.realpath(__file__))
-flaskPath = appPath + '/flaskapp/'
+flaskPath = appPath + '/flaskfiles/'
 staticFlaskPath = flaskPath + 'static'
 templatesFlaskPath = flaskPath + 'templates'
 dataPath = appPath + '/data/'

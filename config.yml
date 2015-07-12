@@ -45,13 +45,44 @@ database:
 
 webserver:
     enable: yes
+    host: '0.0.0.0'
+    port: 5000
     charts:
         history:
             enable: yes
+            height: 500
             panels:
                 [
-                    {name : "Temperature", type : "spline", values : ["temperature","heatIndex"], units : "ºC"},
-                    {name : "Pressure",    type : "spline", values : ["pressure"],                units : "Pa"},
-                    {name : "Humidity",    type : "spline", values : ["humidity"],                units : "%"},
-                    {name : "Illuminance", type : "spline", values : ["lux"],                     units : "Lux"}
+                    {
+                        name : "Temperature",
+                        type : "spline",
+                        values : ["temperature","heatIndex"],
+                        units : "ºC",
+                        height: 23.5, #Percentage of the panel in the chart
+                        offset: 0     #Offset of the panel in respect of the previous one
+                    },
+                    {
+                        name : "Pressure",
+                        type : "spline",
+                        values : ["pressure"],
+                        units : "Pa",
+                        height: 23.5, #Percentage of the panel in the chart
+                        offset: 2     #Offset of the panel in respect of the previous one
+                    },
+                    {
+                        name : "Humidity",
+                        type : "spline",
+                        values : ["humidity"],
+                        units : "%",
+                        height: 23.5, #Percentage of the panel in the chart
+                        offset: 2     #Offset of the panel in respect of the previous one
+                    },
+                    {
+                        name : "Illuminance",
+                        type : "spline",
+                        values : ["lux"],
+                        units : "Lux",
+                        height: 23.5, #Percentage of the panel in the chart
+                        offset: 2     #Offset of the panel in respect of the previous one
+                    }
                 ]
