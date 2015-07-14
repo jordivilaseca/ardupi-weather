@@ -22,21 +22,18 @@ def formatDatetime(date):
 def jsonTimestamp(stringTime):
 	return time.mktime(datetime.datetime.strptime(stringTime, '%Y-%m-%d %H:%M:%S.%f').timetuple())*1000
 
-def updateJsonFiles(jsonHistoryFiles, valuesDict):
-	for f in jsonHistoryFiles:
-		filePath = dataPath + f + '.json'
+def updateJsonFiles(historyJsonFile, historyJsonData, valuesDict):
+	# Read data
+	with open(historyJsonFile, 'r') as jsonFile:
+		data = json.load(jsonFile)
 
-		# check if the file exists, in case it does not exists we create it
-		if not os.path.exists(filePath):
-			with open(filePath, 'w+') as jsonFile:
-				jsonFile.write('[]')
+	# Update data dictionary
+	lData = [valuesDict[key] for key in historyJsonData]
+	data.append([jsonTimestamp(valuesDict['date']),lData])
 
-		# update data
-		with open(filePath, 'r') as jsonFile:
-			data = json.load(jsonFile)
-		data.append([jsonTimestamp(valuesDict['date']),valuesDict[f]])
-		with open(filePath, 'w') as jsonFile:
-			json.dump(data, jsonFile)
+	# Update file
+	with open(historyJsonFile, 'w') as jsonFile:
+		json.dump(data, jsonFile)
 
 def printSensor(sensor, value):
 	date = getDatetime()
@@ -168,9 +165,16 @@ class station:
 		# Configure structures for history chart
 		historyChart = charts['history']
 		if historyChart['enable']:
-			self.jsonHistoryFiles = []
+			self.historyJsonFile = dataPath + 'history.json'
+
+			# check if the file exists, in case it does not exists we create it
+			if not os.path.exists(self.historyJsonFile):
+				with open(self.historyJsonFile, 'w+') as jsonFile:
+					jsonFile.write('[]')
+
+			self.historyJsonData = []
 			for panel in historyChart['panels']:
-				self.jsonHistoryFiles.extend(list(panel['values']))
+				self.historyJsonData.extend(list(panel['values']))
 			self.jsonHistory = True
 		else:
 			self.jsonHistory = False
@@ -202,7 +206,7 @@ class station:
 
 		# Update json file
 		if self.jsonHistory:
-			updateJsonFiles(self.jsonHistoryFiles, valuesDict)
+			updateJsonFiles(self.historyJsonFile, self.historyJsonData, valuesDict)
 		print('Inserted data to history')
 
 		# Reset data

@@ -30,7 +30,7 @@ database:
     historyDB:
         enable: yes
         name: "history"
-        updateEvery : {d : 0, h : 0, m : 10, s : 0}
+        updateEvery : {d : 0, h : 0, m : 2, s : 0}
 
     # It can only be enabled if historyDB is enabled
     dailyHistoryDB:
@@ -45,11 +45,12 @@ database:
 
 webserver:
     enable: yes
-    host: '0.0.0.0'
+    host: '172.0.0.1'
     port: 5000
     charts:
         history:
             enable: yes
+            name: 'history'
             height: 500
             panels:
                 [
@@ -57,7 +58,7 @@ webserver:
                         name : "Temperature",
                         type : "spline",
                         values : ["temperature","heatIndex"],
-                        units : "ºC",
+                        units : "C",
                         height: 23.5, #Percentage of the panel in the chart
                         offset: 0     #Offset of the panel in respect of the previous one
                     },
