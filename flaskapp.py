@@ -6,6 +6,10 @@ from threading import Thread, Event
 from chartManager import chartManager
 from config import cfg, templatesFlaskPath, staticFlaskPath, dataPath
 from flask.ext.socketio import SocketIO, emit
+from alarm import alarm
+import logging
+
+logging.basicConfig()
 
 app = Flask(__name__,static_folder=staticFlaskPath,template_folder=templatesFlaskPath)
 socketio = SocketIO(app)
@@ -18,23 +22,39 @@ def readJsonData(filePath):
 		data = json.load(jsonFile)
 	return data
 
-def background_thread():
-	uE = cfg['data']['history']['updateEvery']
-	sleepTime = uE['d']*24*3600 + uE['h']*3600 + uE['m']*60 + uE['s']
+def sendHistoryData():
+	data = readJsonData(dataPath + 'history.json')
+	socketio.emit('historyUpdate',data[-1],namespace='/test')
+
+def sendCurrentData():
+	data = readJsonData(dataPath + 'currentData.json')
+	socketio.emit('currentDataUpdate',data,namespace='/test')
+
+functions = {'sendHistoryData': sendHistoryData, 'sendCurrentData': sendCurrentData}
+
+def liveUpdatesThread():
+	alarms = alarm()
+
+	if cfg['webserver']['charts']['history']['enable']:
+		update = cfg['data']['history']['updateEvery']
+	alarms.add('sendHistoryData', update['d'], update['h'], update['m'], update['s'])
+
+	if cfg['webserver']['liveData']['enable']:
+		update = cfg['webserver']['liveData']['updateEvery']
+	alarms.add('sendCurrentData', update['d'], update['h'], update['m'], update['s'])
+	
 	while not thread_stop_event.isSet():
-		time.sleep(2)
-		data = readJsonData(dataPath + 'history.json')
-		socketio.emit('sample',data[-1],namespace='/test')
+		toDo = alarms.getThingsToDo()
+		for funcId in toDo:
+			functions[funcId]()
+			alarms.update([funcId])
+		time.sleep(5)
 
 cm = chartManager()
 
 @app.route('/')
 def home():
 	return render_template('index.html', image_name='static/img/header.jpg', chart=cm.getChart('history'))
-
-@socketio.on('my event', namespace='/test')
-def test_message(message):
-	pass
 
 @socketio.on('connect', namespace='/test')
 def connect():
@@ -44,7 +64,7 @@ def connect():
 
 	if not thread.isAlive():
 		thread_stop_event.clear()
-		thread = Thread(target=background_thread,name='flaskapp.py: SocketIO thread')
+		thread = Thread(target=liveUpdatesThread,name='flaskapp.py: SocketIO thread')
 		thread.start()
 
 @socketio.on('disconnect', namespace='/test')

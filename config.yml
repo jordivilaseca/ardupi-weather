@@ -12,7 +12,7 @@ arduino:
 
     usb: {port : 'ttyACM0', baud : 57600}
 
-database:
+data:
     name : 'weatherStation'
     values :
         {
@@ -23,17 +23,17 @@ database:
             lux         : "INTEGER"
         }
 
-    used: "sqlite"
+    usedDB: "sqlite"
     sqlite: {path : "default"}
     mongo : {server: "localhost", port : 27017}
 
-    historyDB:
+    history:
         enable: yes
         name: "history"
         updateEvery : {d : 0, h : 0, m : 2, s : 0}
 
-    # It can only be enabled if historyDB is enabled
-    dailyHistoryDB:
+    # It can only be enabled if history is enabled
+    dailyHistory:
         enable: yes
         name: "dailyHistory"
 
@@ -41,7 +41,6 @@ database:
         enable: yes
         path: "default"
         name: "currentData.json"
-        updateEvery: {d: 0, h: 0, m: 1, s: 0}
 
 webserver:
     enable: yes
@@ -87,3 +86,8 @@ webserver:
                         offset: 2     #Offset of the panel in respect of the previous one
                     }
                 ]
+
+    liveData:
+        enable: yes
+        path: "default"
+        updateEvery: {d: 0, h: 0, m: 1, s: 0}

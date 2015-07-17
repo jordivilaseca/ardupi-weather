@@ -15,9 +15,9 @@ $(document).ready(function() {
 				    var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
 				    var series = this.series;
 				    var chart = $(chart_id).highcharts()
-				    socket.on('sample', function (sample) {
+				    socket.on('historyUpdate', function (data) {
 				    	for (var i = 0; i < series.length-1; i++) {
-    						series[i].addPoint([sample[0], sample[1][i]], false, true);
+    						series[i].addPoint([data[0], data[1][i]], false, true);
     					}
     					chart.redraw()
 				    });

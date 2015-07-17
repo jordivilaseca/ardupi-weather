@@ -55,7 +55,7 @@ class station:
 		self.sensorData = cfg['arduino']['sensors']
 		self.sensorNamesList = list(self.sensorData.keys())
 
-		self.sensorTypes = cfg['database']['values']
+		self.sensorTypes = cfg['data']['values']
 		self.sensorUnits = {key: self.sensorTypes[value] for key,value in self.sensorData.items()}		
 
 		#Configure arduino
@@ -63,24 +63,20 @@ class station:
 		self.configureArduino(arduinoCfg)
 
 		#Configure database
-		databaseCfg = cfg['database']
-		self.configureDatabase(databaseCfg)
+		dataCfg = cfg['data']
+		self.configureDatabase(dataCfg)
 
 		#Initialize history database
-		historyCfg = databaseCfg['historyDB']
+		historyCfg = dataCfg['history']
 		self.initialitzeHistoryDatabase(historyCfg)
 
 		#Initialize daily history database
-		dailyHistoryCfg = databaseCfg['dailyHistoryDB']
+		dailyHistoryCfg = dataCfg['dailyHistory']
 		self.initializeDailyHistoryDatabase(dailyHistoryCfg, historyCfg)
-
-		#Initialize last sensor values record
-		currentDataCfg = databaseCfg['currentData']
-		self.initialitzeCurrentData(currentDataCfg)
 
 		#configure station for webserver support
 		webserverCfg = cfg['webserver']
-		self.configureWebserverSupport(webserverCfg, historyCfg, dailyHistoryCfg, currentDataCfg)
+		self.configureWebserverSupport(webserverCfg, historyCfg, dailyHistoryCfg)
 
 		#Initialize terminal input
 		self.t = terminal()
@@ -95,11 +91,11 @@ class station:
 		else:
 			print ('Unknown arduino connection')
 
-	def configureDatabase(self, database):
-		self.databaseName = database['name']
+	def configureDatabase(self, data):
+		self.databaseName = data['name']
 
-		usedDatabase = database['used']
-		db = database[usedDatabase]
+		usedDatabase = data['usedDB']
+		db = data[usedDatabase]
 		if usedDatabase == 'sqlite':
 			self.dbc.enableSqlite(db['path'] + self.databaseName)
 		elif usedDatabase == 'mongo':
@@ -112,8 +108,8 @@ class station:
 			self.dbHistoryHeader = {'date' : 'TEXT'}
 			self.dbHistoryHeader.update(self.sensorTypes)
 
-			self.historyDBName = history['name']
-			self.dbc.createDataContainer(self.historyDBName, self.dbHistoryHeader)
+			self.historyDataName = history['name']
+			self.dbc.createDataContainer(self.historyDataName, self.dbHistoryHeader)
 			self.sensorSum = dict.fromkeys(self.sensorTypes, 0)
 			self.sensorNum = dict.fromkeys(self.sensorTypes, 0)
 
@@ -142,7 +138,7 @@ class station:
 
 	def initialitzeCurrentData(self, currentData):
 		if currentData['enable']:
-			self.currentDataFile = currentData['path'] + currentData['name']
+			self.currentDataFile = currentData['path'] + "currentData.json"
 
 			self.currentDataValues = {}
 
@@ -152,13 +148,14 @@ class station:
 
 			self.newValueFunctions.append(self.updateCurrentData)
 
-	def configureWebserverSupport(self, webserver, history, dailyHistory, currentData):
+	def configureWebserverSupport(self, webserver, history, dailyHistory):
 		if webserver['enable']:
-			if not (history['enable'] and dailyHistory['enable'] and currentData['enable']):
-				print("webserver cannot ben enabled because 'history' or 'dailyHistory' or 'currentData' are not enabled")
+			if not (history['enable'] and dailyHistory['enable']):
+				print("webserver cannot be enabled because 'history' or 'dailyHistory' are not enabled")
 				return
 
 			self.configureWebserverCharts(webserver['charts'])
+			self.initialitzeCurrentData(webserver['liveData'])
 
 	def configureWebserverCharts(self, charts):
 
@@ -202,7 +199,7 @@ class station:
 		valuesDict = processSensors(self.sensorSum, self.sensorNum)
 
 		# Update database
-		self.dbc.insertDataEntry(self.historyDBName, valuesDict)
+		self.dbc.insertDataEntry(self.historyDataName, valuesDict)
 
 		# Update json file
 		if self.jsonHistory:
@@ -221,7 +218,7 @@ class station:
 		lastDay = datetime.date.today() - datetime.timedelta(days=1)
 		minVal = datetime.datetime.combine(lastDay, datetime.datetime.min.time())
 		maxVal = datetime.datetime.combine(lastDay, datetime.datetime.max.time())
-		data = self.dbc.queryBetweenValues(self.historyDBName, 'date', formatDatetime(minVal), formatDatetime(maxVal))
+		data = self.dbc.queryBetweenValues(self.historyDataName, 'date', formatDatetime(minVal), formatDatetime(maxVal))
 		dailyData = dict.fromkeys(self.dbDailyHistoryHeader, 0)
 		dailyData['date'] = lastDay
 
