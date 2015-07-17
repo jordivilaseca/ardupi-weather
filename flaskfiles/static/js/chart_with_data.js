@@ -1,5 +1,13 @@
 $(document).ready(function() {
+
+	Highcharts.setOptions({
+        global: {
+            useUTC: false
+        }
+    });
+
 	$(chart_id).highcharts('StockChart', {
+
 		chart : {
 			height: height,
             events : {
