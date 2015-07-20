@@ -37,11 +37,11 @@ def liveUpdatesThread():
 
 	if cfg['webserver']['charts']['history']['enable']:
 		update = cfg['data']['history']['updateEvery']
-	alarms.add('sendHistoryData', update['d'], update['h'], update['m'], update['s'])
+		alarms.add('sendHistoryData', update['d'], update['h'], update['m'], update['s'])
 
 	if cfg['webserver']['liveData']['enable']:
 		update = cfg['webserver']['liveData']['updateEvery']
-	alarms.add('sendCurrentData', update['d'], update['h'], update['m'], update['s'])
+		alarms.add('sendCurrentData', update['d'], update['h'], update['m'], update['s'])
 	
 	while not thread_stop_event.isSet():
 		toDo = alarms.getThingsToDo()
@@ -54,7 +54,8 @@ cm = chartManager()
 
 @app.route('/')
 def home():
-	return render_template('index.html', image_name='static/img/header.jpg', chart=cm.getChart('history'))
+	currentData = readJsonData(dataPath + 'currentData.json')
+	return render_template('index.html', image_name='static/img/header.jpg', chart=cm.getChart('history'), currentData = currentData)
 
 @socketio.on('connect', namespace='/test')
 def connect():

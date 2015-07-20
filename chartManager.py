@@ -35,11 +35,7 @@ def createChart(key,chartCFG):
 class chartManager:
 
 	def __init__(self):
-		self.charts = {}
-
-		for key, value in cfg['webserver']['charts'].items():
-			if value['enable']:
-				self.charts[key] = createChart(key,value)
+		pass
 
 	def getChart(self, id):
-		return self.charts[id]
+		return createChart(id, cfg['webserver']['charts'][id])

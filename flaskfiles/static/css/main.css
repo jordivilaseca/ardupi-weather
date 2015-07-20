@@ -28,5 +28,6 @@ header{
 }
 .navbar-custom .navbar-brand {
   vertical-align: middle;
+  font-weight: 800;
   color: white; 
 }

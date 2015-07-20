@@ -10,7 +10,13 @@
     <title>My weather</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="{{ url_for ('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -23,7 +29,7 @@
   </head>
   <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-custom navbar-inverse navbar-fixed-top" role="navigation">
+    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
         <div class="container" style="margin-left: 0px;">
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">
@@ -44,7 +50,22 @@
         <li><a data-toggle="tab" href="#chart2">Daily History</a></li>
       <div class="tab-content">
         <div class="tab-pane" id="livedata">
-          <div id="log"></div>
+          <table id="currentDataTable" class="table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for key, value in currentData.iteritems() %}
+              <tr>
+                <td>{{ key|e }}</td>
+                <td id="{{ key|e }}">{{ value|e }}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
         </div>
         <div class="tab-pane" id="chart1">
           <div id={{ chart['chartID']|safe }} class="chart" style="width: 95%; margin: 0 auto;"></div>
@@ -61,11 +82,12 @@
       var chart_name = {{ chart['chartName']|safe }}
       var series = {{ chart['series']|safe }}
     </script>
-      <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-      <script src="http://code.highcharts.com/stock/highstock.js"></script>
-      <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
-      <script src="{{ url_for('static', filename='js/chart_with_data.js') }}"></script>
-      <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-      <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="http://code.highcharts.com/stock/highstock.js"></script>
+    <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/chart_with_data.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/live_data.js') }}"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
   </body>
 </html>
