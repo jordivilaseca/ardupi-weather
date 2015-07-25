@@ -8,9 +8,10 @@ arduino:
             DHT22HI : "heatIndex",
             BH1750  : "lux"
         }
-    usedConnection: "usb"
 
-    usb: {port : 'ttyACM0', baud : 57600}
+    usedConnection: "433mhz"
+    usb:    {port : 'ttyACM0', baud : 57600}
+    433mhz: {rxPin: 27, bps: 2000}
 
 data:
     name : 'weatherStation'

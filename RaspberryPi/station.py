@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from config import cfg, dataPath
-from arduino import arduino
+from arduino.arduino import arduino
 from database import databaseController
 import os
 from terminal import terminal
@@ -85,11 +85,7 @@ class station:
 
 	def configureArduino(self, ard):
 		connection = ard['usedConnection']
-		if connection == 'usb':
-			usb = ard['usb']
-			self.ard = arduino(usb['port'], usb['baud'], self.sensorUnits)
-		else:
-			print ('Unknown arduino connection')
+		self.ard = arduino(connection, ard[connection], self.sensorUnits)
 
 	def configureDatabase(self, data):
 		self.databaseName = data['name']

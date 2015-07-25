@@ -1,12 +1,17 @@
 #include <Wire.h>
 #include <SFE_BMP180.h>
-#include <RCSwitch.h>
 #include <BH1750.h>
 #include <DHT.h>
 
 #define count(x) sizeof(x)/sizeof(unsigned long)
 #define groundPin A0
 
+#define CONNECTION_TYPE 1 // 0 -> USB, 1 -> 433mhz
+
+#if CONNECTION_TYPE == 1
+  #include <VirtualWire.h>
+  #define TRANSMIT_PIN 10
+#endif
 
 #define ALTITUDE 570 // We need it for the barometric pressure calculus
 
@@ -25,7 +30,6 @@
 SFE_BMP180 pressure;
 DHT dht(DHTPIN, DHTTYPE);
 BH1750 light;
-RCSwitch mySwitch = RCSwitch();
 
 int types[] = {BMP180T,BMP180P,DHT22T,DHT22H,DHT22HI,BH1750L};
 unsigned long lastUpdate[] = {0,0,0,0,0,0};
@@ -80,10 +84,24 @@ uint16_t BH1750Light() {
   return light.readLightLevel();
 }
 
+#if CONNECTION_TYPE == 0
+
 void sendCommand(String c, String v) {
-  Serial.println(c);
-  Serial.println(v);
+  Serial.println(c + "_" + v);
 }
+
+#elif CONNECTION_TYPE == 1
+
+void sendData(String s) {
+  const char* cchar = s.c_str();
+  vw_send((uint8_t *)cchar, strlen(cchar));
+  vw_wait_tx(); // Wait until the whole message is gone
+}
+
+void sendCommand(String c, String v) {
+  sendData(c + "_" + v);
+}
+#endif
 
 void update(int type, int pin) {
   String c, v;
@@ -155,7 +173,14 @@ void updateAll() {
 }
 
 void setup() {
+
+#if CONNECTION_TYPE == 0
   Serial.begin(57600); // set the baud rate
+#elif CONNECTION_TYPE == 1
+  vw_set_tx_pin(TRANSMIT_PIN);
+  vw_setup(2000);       // Bits per sec
+#endif
+
   pressure.begin();
   dht.begin();
   light.begin();
