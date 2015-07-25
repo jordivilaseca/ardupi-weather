@@ -6,4 +6,4 @@ class usbConn:
 
 	def read(self):
 		data = self.ser.readline()
-		return data[0:-2] 			#Remove endline chars
+		return data[0:-2].decode("utf-8") 			#Remove endline chars

@@ -1,4 +1,5 @@
-import vw
+from arduino import vw
+import pigpio
 
 class vw433mhzConn:
 	def __init__(self, options):

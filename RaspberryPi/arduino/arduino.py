@@ -11,9 +11,6 @@ class arduino:
 		self.conn = self.connTypes[connType](options)
 		self.sensors = sensors
 		self.func = {"FLOAT": float, "INTEGER": int}
-		
-	def readBytes(self):
-		return self.conn.read()
 
 	def readInt(self):
 		return int(self.readFloat())
@@ -22,7 +19,7 @@ class arduino:
 		return float(self.readString())
 
 	def readString(self):
-		return self.readBytes().decode("utf-8")
+		return self.conn.read()
 
 	def readInput(self):
 		rawData = self.readString()
