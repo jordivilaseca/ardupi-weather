@@ -11,6 +11,7 @@
 #if CONNECTION_TYPE == 1
   #include <VirtualWire.h>
   #define TRANSMIT_PIN 10
+  #define REPETITIONS 5   // Number of times that a message will be sent. Minimum is 1
 #endif
 
 #define ALTITUDE 570 // We need it for the barometric pressure calculus
@@ -33,7 +34,7 @@ BH1750 light;
 
 int types[] = {BMP180T,BMP180P,DHT22T,DHT22H,DHT22HI,BH1750L};
 unsigned long lastUpdate[] = {0,0,0,0,0,0};
-unsigned long updateTimes[] = {30000,60000,30000,30000,60000,60000};
+unsigned long updateTimes[] = {60000,60000,30000,30000,60000,60000};
 int pins[] = {NOTUSED,NOTUSED,NOTUSED,NOTUSED,NOTUSED,NOTUSED};
 
 int secureAnalogRead(int pin) {
@@ -99,7 +100,9 @@ void sendData(String s) {
 }
 
 void sendCommand(String c, String v) {
-  sendData(c + "_" + v);
+  for(int i = 0; i < REPETITIONS; i++) {
+    sendData(c + "_" + v);
+  }
 }
 #endif
 

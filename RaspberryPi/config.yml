@@ -10,8 +10,15 @@ arduino:
         }
 
     usedConnection: "433mhz"
-    usb:    {port : 'ttyACM0', baud : 57600}
-    433mhz: {rxPin: 27, bps: 2000}
+    usb:    
+        port : 'ttyACM0'
+        baud : 57600
+    433mhz:
+        rxPin: 27   # GPIO pin
+        bps: 2000
+        enableRepetitions: yes
+        # Time in seconds, if a value is the same as the previous one and the time between the two values is less than maxRepetitionTime then the value will be seen as a repetition, and as a result will be discarded.
+        maxRepetitionTime: 1
 
 data:
     name : 'weatherStation'
