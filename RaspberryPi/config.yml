@@ -9,7 +9,7 @@ arduino:
             BH1750  : "lux"
         }
 
-    usedConnection: "433mhz"
+    usedConnection: 433mhz
     usb:    
         port : 'ttyACM0'
         baud : 57600
@@ -52,7 +52,7 @@ data:
 
 webserver:
     enable: yes
-    host: '172.0.0.1'
+    host: '0.0.0.0'
     port: 5000
     charts:
         history:

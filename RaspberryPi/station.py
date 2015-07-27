@@ -247,10 +247,10 @@ class station:
 		while True:
 
 			# Read data from Arduino and update the partial data
-			sensor, value = self.ard.readInput()
+			data = self.ard.readInput()
 
 			# Execute functions when it gets new data
-			if (len(sensor) > 0):
+			for (sensor,value) in data:
 				if sensor in self.sensorNamesList:
 					valueType = self.sensorData[sensor]
 					for f in self.newValueFunctions:

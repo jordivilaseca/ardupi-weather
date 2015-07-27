@@ -15,14 +15,15 @@ class vw433mhzConn:
 			self.enableRepetitions = False
 
 	def read(self):
-		msg = ""
-		if self.rx.ready():
+		data = []
+		while self.rx.ready():
 			msg = "".join(chr (c) for c in self.rx.get())
 			if self.enableRepetitions:
-				if msg == self.lastValue and time() < self.lastTime + self.maxRepetitionTime:
-					msg = ""
-				else:
+				if msg != self.lastValue or time() >= self.lastTime + self.maxRepetitionTime:
+					data.append(msg)
 					self.lastValue = msg
 					self.lastTime = time()
-		return msg
+			else:
+				data.append(msg)
+		return data
 		

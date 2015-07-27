@@ -78,7 +78,5 @@ def disconnect():
  
 if __name__ == '__main__':
 	app.debug = True
-	app.host = cfg['webserver']['host']
-	app.port = cfg['webserver']['port']
-	socketio.run(app)
+	socketio.run(app, host=cfg['webserver']['host'],port=cfg['webserver']['port'])
 
