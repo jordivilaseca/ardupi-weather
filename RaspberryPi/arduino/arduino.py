@@ -5,7 +5,7 @@ from time import sleep
 class arduino:
 
 	def __init__(self, connType, options, sensors):
-		self.connTypes = {'433mhz' : self.initvw433mhzConn, 'usb' : self.initusbConn}
+		self.connTypes = {'433mhz' : self.initvw433mhzConn, 'usb' : self.initusbConn, 'nrf24l01p' : self.initnrf24l01p}
 
 		self.connTypes[connType](options)
 		self.sensors = sensors
@@ -18,6 +18,10 @@ class arduino:
 	def initusbConn(self, options):
 		from arduino import usbConn
 		self.conn = usbConn.usbConn(options)
+
+	def initnrf24l01p(self, options):
+		from arduino import nrf24l01pConn
+		self.conn = nrf24l01pConn.nrf24l01pConn(options)
 
 	def readInt(self):
 		return int(self.readFloat())

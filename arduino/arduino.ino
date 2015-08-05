@@ -6,12 +6,18 @@
 #define count(x) sizeof(x)/sizeof(unsigned long)
 #define groundPin A0
 
-#define CONNECTION_TYPE 1 // 0 -> USB, 1 -> 433mhz
+#define CONNECTION_TYPE 2 // 0 -> USB, 1 -> 433mhz, 2 -> nrf24l01+
 
 #if CONNECTION_TYPE == 1
   #include <VirtualWire.h>
   #define TRANSMIT_PIN 10
   #define REPETITIONS 5   // Number of times that a message will be sent. Minimum is 1
+#elif CONNECTION_TYPE == 2
+  #include <SPI.h>
+  #include "nRF24L01.h"
+  #include "RF24.h"
+  RF24 radio(9,10);       // CE and CSN of nrf24l01+
+  const uint64_t pipes[2] = { 0xF0F0F0F0E1LL, 0xF0F0F0F0D2LL };
 #endif
 
 #define ALTITUDE 570 // We need it for the barometric pressure calculus
@@ -104,6 +110,17 @@ void sendCommand(String c, String v) {
     sendData(c + "_" + v);
   }
 }
+
+#elif CONNECTION_TYPE == 2
+
+void sendCommand(String c, String v) {
+  String data = c + "_" + v;
+  const char* datachar = data.c_str();
+
+  radio.powerUp();
+  radio.write(datachar, strlen(datachar));
+  radio.powerDown();
+}
 #endif
 
 void update(int type, int pin) {
@@ -182,6 +199,13 @@ void setup() {
 #elif CONNECTION_TYPE == 1
   vw_set_tx_pin(TRANSMIT_PIN);
   vw_setup(2000);       // Bits per sec
+#elif CONNECTION_TYPE == 2
+  radio.begin();
+  radio.enableDynamicPayloads();
+  radio.setRetries(5,15);
+  radio.openWritingPipe(pipes[0]);
+  radio.openReadingPipe(1,pipes[1]);
+  radio.stopListening();
 #endif
 
   pressure.begin();

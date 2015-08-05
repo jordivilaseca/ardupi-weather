@@ -9,9 +9,9 @@ arduino:
             BH1750  : "lux"
         }
 
-    usedConnection: 433mhz
+    usedConnection: nrf24l01p
     usb:    
-        port : 'ttyACM0'
+        port : 'ttyUSB0'
         baud : 57600
     433mhz:
         rxPin: 27   # GPIO pin
@@ -19,6 +19,8 @@ arduino:
         enableRepetitions: yes
         # Time in seconds, if a value is the same as the previous one and the time between the two values is less than maxRepetitionTime then the value will be seen as a repetition, and as a result will be discarded.
         maxRepetitionTime: 1
+    nrf24l01p:
+        repetitions: 15         # Maximum number of repetitions 15
 
 data:
     name : 'weatherStation'
