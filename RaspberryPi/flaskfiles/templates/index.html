@@ -68,7 +68,7 @@
           </table>
         </div>
         <div class="tab-pane fade" id="chart1">
-          <div id={{ chart['chartID']|safe }} class="chart" style="width: 95%; margin: 0 auto;"></div>
+          <div id="{{ chart['chartID']|safe }}" class="chart" style="width: 95%; margin: 0 auto;"></div>
         </div>
         <div class="tab-pane fade" id="chart2">
           2
@@ -79,7 +79,7 @@
       var chart_id = {{ chart['chartID']|safe }}
       var height = {{ chart['height']|safe }}
       var yAxis = {{ chart['yAxis']|safe }}
-      var chart_name = {{ chart['chartName']|safe }}
+      var chart_name = "{{ chart['chartName']|string }}"
       var series = {{ chart['series']|safe }}
     </script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
