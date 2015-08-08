@@ -37,16 +37,16 @@ class arduino:
 		allData = []
 		for string in strings:
 			data = string.split('_')
-			if (len(data) == 2):
-				sensor = data[0]
+			sensor = data[0]
+			if (len(data) == 2 and sensor in self.sensors.keys()):
 				value = data[1]
 				try:
 					value = self.func[self.sensors[sensor]](value)	#Changing type
 					allData.append((sensor,value))
 				except ValueError:
-					print("Not valid input:", strings)
+					print("Not valid input:", string)
 			else:
-				print ("Not valid input:", strings)
+				print ("Not valid input:", string)
 		return allData
 				
 

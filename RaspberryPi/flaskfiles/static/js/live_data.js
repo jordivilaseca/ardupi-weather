@@ -4,6 +4,5 @@ $(document).ready(function() {
 		for (var key in data) {
 			$('#' + key).html(data[key]);
 		}
-		console.log("DataRecived")
 	});
 });
