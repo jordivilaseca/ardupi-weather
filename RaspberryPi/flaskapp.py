@@ -9,7 +9,7 @@ from flask.ext.socketio import SocketIO, emit
 from alarm import alarm
 import logging
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__,static_folder=staticFlaskPath,template_folder=templatesFlaskPath)
 socketio = SocketIO(app)
@@ -37,17 +37,16 @@ def liveUpdatesThread():
 
 	if cfg['webserver']['charts']['history']['enable']:
 		update = cfg['data']['history']['updateEvery']
-		alarms.add('sendHistoryData', update['d'], update['h'], update['m'], update['s'])
+		alarms.add(sendHistoryData, update['d'], update['h'], update['m'], update['s'])
 
 	if cfg['webserver']['liveData']['enable']:
 		update = cfg['webserver']['liveData']['updateEvery']
-		alarms.add('sendCurrentData', update['d'], update['h'], update['m'], update['s'])
+		alarms.add(sendCurrentData, update['d'], update['h'], update['m'], update['s'])
 	
 	while not thread_stop_event.isSet():
 		toDo = alarms.getThingsToDo()
-		for funcId in toDo:
-			functions[funcId]()
-			alarms.update([funcId])
+		for func in toDo:
+			func()
 		time.sleep(5)
 
 cm = chartManager()

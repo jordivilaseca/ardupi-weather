@@ -110,7 +110,7 @@ class station:
 			self.sensorNum = dict.fromkeys(self.sensorTypes, 0)
 
 			update = history['updateEvery']
-			self.alarms.add('updateHistory', update['d'], update['h'], update['m'], update['s'])
+			self.alarms.add(self.updateHistory, update['d'], update['h'], update['m'], update['s'])
 			self.generalFunctions['updateHistory'] = self.updateHistory
 
 			self.newValueFunctions.append(self.updateHistoryData)
@@ -129,7 +129,7 @@ class station:
 			self.dailyHistoryDBName = daily['name']
 			self.dbc.createDataContainer(self.dailyHistoryDBName, self.dbDailyHistoryHeader)
 
-			self.alarms.addDaily('updateDailyHistoryDatabase')
+			self.alarms.addDaily(self.updateDailyHistoryDatabase)
 			self.generalFunctions['updateDailyHistoryDatabase'] = self.updateDailyHistoryDatabase
 
 	def initialitzeCurrentData(self, currentData):
@@ -139,7 +139,7 @@ class station:
 			self.currentDataValues = {}
 
 			update = currentData['updateEvery']
-			self.alarms.add('updateCurrentData', update['d'], update['h'], update['m'], update['s'])
+			self.alarms.add(self.updateCurrentDataFile, update['d'], update['h'], update['m'], update['s'])
 			self.generalFunctions['updateCurrentData'] = self.updateCurrentDataFile
 
 			self.newValueFunctions.append(self.updateCurrentData)
@@ -188,9 +188,6 @@ class station:
 
 		print('Updated current data file')
 
-		# Set next update
-		self.alarms.update(['updateCurrentData'])
-
 	def updateHistory(self):
 		valuesDict = processSensors(self.sensorSum, self.sensorNum)
 
@@ -205,9 +202,6 @@ class station:
 		# Reset data
 		self.sensorSum = dict.fromkeys(self.sensorSum, 0)
 		self.sensorNum = dict.fromkeys(self.sensorNum, 0)
-
-		# Set next update
-		self.alarms.update(['updateHistory'])
 
 	def updateDailyHistoryDatabase(self):
 		# Query to database
@@ -240,9 +234,6 @@ class station:
 		self.dbc.insertDataEntry(self.dailyHistoryDBName, dailyData)
 		print('Inserted data to daily history')
 
-		# set next update
-		self.alarms.update(['updateDailyHistoryDatabase'])
-
 	def run(self):
 		while True:
 
@@ -259,8 +250,8 @@ class station:
 
 			# Execute functions when it is necessary
 			toDo = self.alarms.getThingsToDo()
-			for idFunc in toDo:
-				self.generalFunctions[idFunc]()
+			for func in toDo:
+				func()
 
 			# Read from terminal
 			inp = self.t.readLine()
