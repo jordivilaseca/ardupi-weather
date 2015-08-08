@@ -6,7 +6,7 @@
 #define count(x) sizeof(x)/sizeof(unsigned long)
 #define groundPin A0
 
-#define CONNECTION_TYPE 2 // 0 -> USB, 1 -> 433mhz, 2 -> nrf24l01+
+#define CONNECTION_TYPE 0 // 0 -> USB, 1 -> 433mhz, 2 -> nrf24l01+
 
 #if CONNECTION_TYPE == 1
   #include <VirtualWire.h>
@@ -195,7 +195,7 @@ void updateAll() {
 void setup() {
 
 #if CONNECTION_TYPE == 0
-  Serial.begin(57600); // set the baud rate
+  Serial.begin(57600,SERIAL_8E1); // set the baud rate
 #elif CONNECTION_TYPE == 1
   vw_set_tx_pin(TRANSMIT_PIN);
   vw_setup(2000);       // Bits per sec
