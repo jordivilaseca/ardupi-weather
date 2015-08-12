@@ -7,6 +7,8 @@ def readJsonData(filePath):
 	return data
 
 def createChart(key,chartCFG):
+	if not chartCFG['enable']:
+		return None
 	keyFile = dataPath + key + '.json'
 	rawData = readJsonData(keyFile)
 	chart = {}
@@ -17,11 +19,21 @@ def createChart(key,chartCFG):
 	i = 0
 	for panel in chartCFG['panels']:
 		for value in panel['values']:
-			tooltip = {'valueSuffix' : str(panel['units'])}
+			tooltip = {'valueSuffix' : panel['units'].encode('utf-8')}
 			data = [[d[0],d[1][i]] for d in rawData]
 			series.append({'type':panel['type'],'name':value,'data': data, 'yAxis': axisNum, 'tooltip' : tooltip})
 			i += 1
-		yAxis.append({'title': {'text': panel['name']}, 'height': str(panel['height'])+'%', 'top': str(top)+'%', 'offset': 0, 'labels': {'align': 'right', 'x': -3}})
+		currYAxis = {}
+		currYAxis['title'] = {'text': panel['name']}
+		currYAxis['height'] = str(panel['height']) + '%'
+		currYAxis['top'] = str(top)+'%'
+		currYAxis['offset'] = 0
+		currYAxis['labels'] = {'align': 'right', 'x': -3}
+		if 'min' in panel:
+			currYAxis['min'] = panel['min']
+		if 'max' in panel:
+			currYAxis['max'] = panel['max']
+		yAxis.append(currYAxis)
 		top += panel['height'] + panel['offset']
 		axisNum += 1
 
