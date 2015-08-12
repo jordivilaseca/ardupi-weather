@@ -93,9 +93,12 @@ webserver:
                         values : ["lux"],
                         units : "Lux",
                         height: 23.5, #Percentage of the panel in the chart
-                        offset: 2     #Offset of the panel in respect of the previous one
+                        offset: 2,    #Offset of the panel in respect of the previous one
+                        min: 0        #Minimum value for the Y Axis.
                     }
                 ]
+        dailyHistory:
+            enable: no
 
     liveData:
         enable: yes

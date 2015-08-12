@@ -44,43 +44,76 @@
       <img id="img_header" src= "{{ image_name }}" />
     </div>
     <div>
+      {% if numPills > 1 %}
       <ul class="nav nav-pills nav-justified">
+        {% if liveDataEnable %}
         <li class="active"><a data-toggle="pill" href="#livedata">Live Data</a></li>
+        {% endif %}
+        {% if historyEnable %}
         <li><a data-toggle="pill" href="#chart1">History</a></li>
+        {% endif %}
+        {% if dailyHistoryEnable %}
         <li><a data-toggle="pill" href="#chart2">Daily History</a></li>
+        {% endif %}
+      </ul>
       <div class="tab-content">
-        <div class="tab-pane fade in active" id="livedata">
-          <table id="currentDataTable" class="table">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-            {% for key, value in currentData.iteritems() %}
-              <tr>
-                <td>{{ key|e }}</td>
-                <td id="{{ key|e }}">{{ value|e }}</td>
-              </tr>
-            {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        <div class="tab-pane fade" id="chart1">
-          <div id="{{ chart['chartID']|safe }}" class="chart" style="width: 95%; margin: 0 auto;"></div>
-        </div>
-        <div class="tab-pane fade" id="chart2">
-          2
-        </div>
+      {% endif %}
+
+        {% if liveDataEnable %}
+          {% if numPills > 1 %}
+          <div class="tab-pane fade in active" id="livedata">
+          {% endif %}
+            <table id="currentDataTable" class="table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for key, value in liveData.iteritems() %}
+                <tr>
+                  <td>{{ key|e }}</td>
+                  <td id="{{ key|e }}">{{ value|e }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          {% if numPills > 1 %}
+          </div>
+          {% endif %}
+        {% endif %}
+
+        {% if historyEnable %}
+          {% if numPills > 1 %}
+          <div class="tab-pane fade" id="chart1">
+          {% endif %}
+            <div id="{{ historyChart['chartID']|safe }}" class="chart" style="width: 95%; margin: 0 auto;"></div>
+          {% if numPills > 1 %}
+          </div>
+          {% endif %}
+        {% endif %}
+
+        {% if dailyHistoryEnable %}
+          {% if numPills > 1 %}
+          <div class="tab-pane fade" id="chart2">
+          {% endif %}
+            2
+          {% if numPills > 1 %}
+          </div>
+          {% endif %}
+        {% endif %}
+
+      {% if numPills > 1 %}
       </div>  
-    <div>
+      {% endif %}
+    </div>
     <script>
-      var chart_id = {{ chart['chartID']|safe }}
-      var height = {{ chart['height']|safe }}
-      var yAxis = {{ chart['yAxis']|safe }}
-      var chart_name = "{{ chart['chartName']|string }}"
-      var series = {{ chart['series']|safe }}
+      var chart_id = {{ historyChart['chartID']|safe }}
+      var height = {{ historyChart['height']|safe }}
+      var yAxis = {{ historyChart['yAxis']|safe }}
+      var chart_name = "{{ historyChart['chartName']|string }}"
+      var series = {{ historyChart['series']|safe }}
     </script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="http://code.highcharts.com/stock/highstock.js"></script>

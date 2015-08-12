@@ -53,8 +53,18 @@ cm = chartManager()
 
 @app.route('/')
 def home():
-	currentData = readJsonData(dataPath + 'currentData.json')
-	return render_template('index.html', image_name='static/img/header.jpg', chart=cm.getChart('history'), currentData = currentData)
+	liveData = readJsonData(dataPath + 'currentData.json')
+	numPills = 0
+	historyEnable = cfg['webserver']['charts']['history']['enable']
+	if historyEnable:
+		numPills += 1
+	dailyHistoryEnable = cfg['webserver']['charts']['dailyHistory']['enable']
+	if dailyHistoryEnable:
+		numPills += 1
+	liveDataEnable = cfg['webserver']['liveData']['enable']
+	if liveDataEnable:
+		numPills += 1
+	return render_template('index.html', image_name='static/img/header.jpg', historyChart=cm.getChart('history'), historyEnable = historyEnable, liveData = liveData, liveDataEnable = liveDataEnable, dailyHistoryEnable = dailyHistoryEnable, numPills = numPills)
 
 @socketio.on('connect', namespace='/test')
 def connect():
