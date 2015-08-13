@@ -21,7 +21,7 @@ def createChart(key,chartCFG):
 		for value in panel['values']:
 			tooltip = {'valueSuffix' : panel['units'].encode('utf-8')}
 			data = [[d[0],d[1][i]] for d in rawData]
-			series.append({'type':panel['type'],'name':value,'data': data, 'yAxis': axisNum, 'tooltip' : tooltip})
+			series.append({'type':panel['type'],'name':value,'data': data, 'yAxis': axisNum, 'tooltip' : tooltip ,'connectNulls': 'true'})
 			i += 1
 		currYAxis = {}
 		currYAxis['title'] = {'text': panel['name']}

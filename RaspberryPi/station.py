@@ -42,13 +42,15 @@ def printSensor(sensor, value):
 def processSensors(sensSum, sensNum):
 	d = {'date' : getDatetime()}
 	for elem in sensSum.keys():
-		d[elem]= round(sensSum[elem]/sensNum[elem], 1)
+		if sensNum[elem] == 0:
+			d[elem] = None
+		else:
+			d[elem]= round(sensSum[elem]/sensNum[elem], 1)
 	return d
 
 class station:
 	def __init__(self):
 		self.dbc = databaseController.databaseController()
-		self.generalFunctions = {}
 		self.newValueFunctions = []
 		self.alarms = alarm()
 
@@ -111,7 +113,6 @@ class station:
 
 			update = history['updateEvery']
 			self.alarms.add(self.updateHistory, update['d'], update['h'], update['m'], update['s'])
-			self.generalFunctions['updateHistory'] = self.updateHistory
 
 			self.newValueFunctions.append(self.updateHistoryData)
 
@@ -130,7 +131,6 @@ class station:
 			self.dbc.createDataContainer(self.dailyHistoryDBName, self.dbDailyHistoryHeader)
 
 			self.alarms.addDaily(self.updateDailyHistoryDatabase)
-			self.generalFunctions['updateDailyHistoryDatabase'] = self.updateDailyHistoryDatabase
 
 	def initialitzeCurrentData(self, currentData):
 		if currentData['enable']:
@@ -140,7 +140,6 @@ class station:
 
 			update = currentData['updateEvery']
 			self.alarms.add(self.updateCurrentDataFile, update['d'], update['h'], update['m'], update['s'])
-			self.generalFunctions['updateCurrentData'] = self.updateCurrentDataFile
 
 			self.newValueFunctions.append(self.updateCurrentData)
 
