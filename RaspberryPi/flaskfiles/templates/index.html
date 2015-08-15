@@ -98,7 +98,7 @@
           {% if numPills > 1 %}
           <div class="tab-pane fade" id="chart2">
           {% endif %}
-            2
+            <div id="{{ dailyHistoryChart['chartID']|safe }}" class="chart" style="width: 95%; margin: 0 auto;"></div>
           {% if numPills > 1 %}
           </div>
           {% endif %}
@@ -109,17 +109,25 @@
       {% endif %}
     </div>
     <script>
-      var chart_id = {{ historyChart['chartID']|safe }}
-      var height = {{ historyChart['height']|safe }}
-      var yAxis = {{ historyChart['yAxis']|safe }}
-      var chart_name = "{{ historyChart['chartName']|string }}"
-      var series = {{ historyChart['series']|tojson }}
+      var hChart_id = {{ historyChart['chartID']|safe }}
+      var hHeight = {{ historyChart['height']|safe }}
+      var hYAxis = {{ historyChart['yAxis']|safe }}
+      var hChart_name = "{{ historyChart['chartName']|string }}"
+      var hSeries = {{ historyChart['series']|tojson }}
+
+      var dhChart_id = {{ dailyHistoryChart['chartID']|safe }}
+      var dhHeight = {{ dailyHistoryChart['height']|safe }}
+      var dhYAxis = {{ dailyHistoryChart['yAxis']|safe }}
+      var dhChart_name = "{{ dailyHistoryChart['chartName']|string }}"
+      var dhSeries = {{ dailyHistoryChart['series']|tojson }}
     </script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="http://code.highcharts.com/stock/highstock.js"></script>
+    <script src="http://code.highcharts.com/stock/highcharts-more.js"></script>
     <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <script src="{{ url_for('static', filename='js/chart_with_data.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/historyChart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dailyHistoryChart.js') }}"></script>
     <script src="{{ url_for('static', filename='js/live_data.js') }}"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
   </body>

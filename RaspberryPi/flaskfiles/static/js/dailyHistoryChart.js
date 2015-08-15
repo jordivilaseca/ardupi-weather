@@ -6,23 +6,10 @@ $(document).ready(function() {
         }
     });
 
-	$(chart_id).highcharts('StockChart', {
+	$(dhChart_id).highcharts('StockChart', {
 
 		chart : {
-			height: height,
-            events : {
-                load : function () {
-				    var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
-				    var series = this.series;
-				    var chart = $(chart_id).highcharts()
-				    socket.on('historyUpdate', function (data) {
-				    	for (var i = 0; i < series.length-1; i++) {
-    						series[i].addPoint([data[0], data[1][i]], false, true);
-    					}
-    					chart.redraw()
-				    });
-                }
-            }
+			height: dhHeight
         },
 
         rangeSelector: {
@@ -54,9 +41,9 @@ $(document).ready(function() {
                 selected: 2
         },
 
-        title: {text: chart_name},
-        xAxis: {categories: ['Time']},
-        yAxis: yAxis,
-        series: series
+        title: {text: dhChart_name},
+        xAxis: {type: 'datetime'},
+        yAxis: dhYAxis,
+        series: dhSeries
     });
 });

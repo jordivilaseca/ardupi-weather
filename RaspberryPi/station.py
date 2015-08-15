@@ -19,21 +19,29 @@ def getDate():
 def formatDatetime(date):
 	return date.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
-def jsonTimestamp(stringTime):
-	return time.mktime(datetime.datetime.strptime(stringTime, '%Y-%m-%d %H:%M:%S.%f').timetuple())*1000
+def jsonTimestamp(stringTime, isDate):
+	if isDate:
+		return time.mktime(datetime.datetime.strptime(stringTime, '%Y-%m-%d').timetuple())*1000
+	else:
+		return time.mktime(datetime.datetime.strptime(stringTime, '%Y-%m-%d %H:%M:%S.%f').timetuple())*1000
 
-def updateJsonFiles(historyJsonFile, historyJsonData, valuesDict):
+def updateJsonFile(jsonFilePath, dataHeader, newValues, isDate = False):
 	# Read data
-	with open(historyJsonFile, 'r') as jsonFile:
+	with open(jsonFilePath, 'r') as jsonFile:
 		data = json.load(jsonFile)
 
 	# Update data dictionary
-	lData = [valuesDict[key] for key in historyJsonData]
-	data.append([jsonTimestamp(valuesDict['date']),lData])
+	newValuesList = [newValues[key] for key in dataHeader]
+	data.append([jsonTimestamp(newValues['date'], isDate),newValuesList])
 
 	# Update file
-	with open(historyJsonFile, 'w') as jsonFile:
+	with open(jsonFilePath, 'w') as jsonFile:
 		json.dump(data, jsonFile)
+
+def createFile(filePath):
+	if not os.path.exists(filePath):
+		with open(filePath, 'w+') as jsonFile:
+			jsonFile.write('[]')
 
 def printSensor(sensor, value):
 	date = getDatetime()
@@ -154,22 +162,34 @@ class station:
 
 	def configureWebserverCharts(self, charts):
 
-		# Configure structures for history chart
+		# Initialize history chart structures
 		historyChart = charts['history']
 		if historyChart['enable']:
-			self.historyJsonFile = dataPath + 'history.json'
+			self.historyJsonFilePath = dataPath + 'history.json'
 
 			# check if the file exists, in case it does not exists we create it
-			if not os.path.exists(self.historyJsonFile):
-				with open(self.historyJsonFile, 'w+') as jsonFile:
-					jsonFile.write('[]')
+			createFile(self.historyJsonFilePath)
 
-			self.historyJsonData = []
+			self.historyJsonDataHeader = []
 			for panel in historyChart['panels']:
-				self.historyJsonData.extend(list(panel['values']))
-			self.jsonHistory = True
+				self.historyJsonDataHeader.extend(list(panel['values']))
+			self.historyJson = True
 		else:
-			self.jsonHistory = False
+			self.historyJson = False
+
+		dailyHistoryChart = charts['dailyHistory']
+		if dailyHistoryChart['enable']:
+			self.dailyHistoryJsonFilePath = dataPath + 'dailyHistory.json'
+
+			# check if the file exists, in case it does not exists we create it
+			createFile(self.dailyHistoryJsonFilePath)
+
+			self.dailyHistoryJsonDataHeader = []
+			for data in self.historyJsonDataHeader:
+				self.dailyHistoryJsonDataHeader.extend([data + 'MIN', data + 'MAX', data + 'AVG'])
+			self.dailyHistoryJson = True
+		else:
+			self.dailyHistoryJson = False
 
 	#Functions to execute when a new sensor value arrives
 	def updateCurrentData(self, valueType, value):
@@ -188,14 +208,14 @@ class station:
 		print('Updated current data file')
 
 	def updateHistory(self):
-		valuesDict = processSensors(self.sensorSum, self.sensorNum)
+		newValues = processSensors(self.sensorSum, self.sensorNum)
 
 		# Update database
-		self.dbc.insertDataEntry(self.historyDataName, valuesDict)
+		self.dbc.insertDataEntry(self.historyDataName, newValues)
 
 		# Update json file
-		if self.jsonHistory:
-			updateJsonFiles(self.historyJsonFile, self.historyJsonData, valuesDict)
+		if self.historyJson:
+			updateJsonFile(self.historyJsonFilePath, self.historyJsonDataHeader, newValues)
 		print('Inserted data to history')
 
 		# Reset data
@@ -209,28 +229,42 @@ class station:
 		maxVal = datetime.datetime.combine(lastDay, datetime.datetime.max.time())
 		data = self.dbc.queryBetweenValues(self.historyDataName, 'date', formatDatetime(minVal), formatDatetime(maxVal))
 		dailyData = dict.fromkeys(self.dbDailyHistoryHeader, 0)
-		dailyData['date'] = lastDay
+		dailyData['date'] = lastDay.strftime("%Y-%m-%d")
+		numValues = dict.fromkeys(self.sensorTypes, 0)
+
+		# Initialization of dailyData
+		for column in dailyData:
+			if 'MIN' in column:
+				dailyData[column] = float('inf')
+			elif 'MAX' in column:
+				dailyData[column] = float('-inf')
+			elif 'AVG' in column:
+				dailyData[column] = 0.
 
 		# Calculus of MIN, MAX and addition of all values to AVG
-		i=0
 		for entry in data:
 			for key,value in entry.items():
-				if key != 'date':
-					if i == 0:
-						dailyData[key + 'MIN'] = value
-						dailyData[key + 'MAX'] = value
-						dailyData[key + 'AVG'] = value
-					else:
-						dailyData[key + 'MIN'] = min(dailyData[key + 'MIN'], value)
-						dailyData[key + 'MAX'] = max(dailyData[key + 'MAX'], value)
-						dailyData[key + 'AVG'] += value
-			i += 1
+				if key != 'date' and value != None:
+					dailyData[key + 'MIN'] = min(dailyData[key + 'MIN'], value)
+					dailyData[key + 'MAX'] = max(dailyData[key + 'MAX'], value)
+					dailyData[key + 'AVG'] += value
+					numValues[key] += 1
 
 		# Calculus of AVG
 		for key in self.sensorTypes.keys():
-			dailyData[key + 'AVG'] = dailyData[key + 'AVG']/i
+			if numValues[key] != 0:
+				dailyData[key + 'AVG'] = dailyData[key + 'AVG']/numValues[key]
+			else:
+				# there is no value registered for this sensor in 'lastDay'
+				dailyData[key + 'AVG'] = None
+				dailyData[key + 'MIN'] = None
+				dailyData[key + 'MAX'] = None
 
 		self.dbc.insertDataEntry(self.dailyHistoryDBName, dailyData)
+
+		# Update json file
+		if self.dailyHistoryJson:
+			updateJsonFile(self.dailyHistoryJsonFilePath, self.dailyHistoryJsonDataHeader, dailyData, True)
 		print('Inserted data to daily history')
 
 	def run(self):

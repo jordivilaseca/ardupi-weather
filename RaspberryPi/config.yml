@@ -9,7 +9,7 @@ arduino:
             BH1750  : "lux"
         }
 
-    usedConnection: nrf24l01p
+    usedConnection: usb
     usb:    
         port : 'ttyUSB0'
         baud : 57600
@@ -57,6 +57,7 @@ webserver:
     host: '0.0.0.0'
     port: 5000
     charts:
+        colors: ['#2f7ed8', '#0d233a', '#8bbc21', '#910000', '#1aadce', '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a']
         history:
             enable: yes
             name: 'history'
@@ -98,7 +99,43 @@ webserver:
                     }
                 ]
         dailyHistory:
-            enable: no
+            enable: yes
+            name: 'daily history'
+            height: 500
+            showAVG: yes
+            showMINMAX: yes
+            panels:
+                [
+                    {
+                        name : "Temperature",
+                        values : ["temperature","heatIndex"],
+                        units : "C",
+                        height: 23.5, #Percentage of the panel in the chart
+                        offset: 0     #Offset of the panel in respect of the previous one
+                    },
+                    {
+                        name : "Pressure",
+                        values : ["pressure"],
+                        units : "Pa",
+                        height: 23.5, #Percentage of the panel in the chart
+                        offset: 2     #Offset of the panel in respect of the previous one
+                    },
+                    {
+                        name : "Humidity",
+                        values : ["humidity"],
+                        units : "%",
+                        height: 23.5, #Percentage of the panel in the chart
+                        offset: 2     #Offset of the panel in respect of the previous one
+                    },
+                    {
+                        name : "Illuminance",
+                        values : ["lux"],
+                        units : "Lux",
+                        height: 23.5, #Percentage of the panel in the chart
+                        offset: 2,    #Offset of the panel in respect of the previous one
+                        min: 0        #Minimum value for the Y Axis.
+                    }
+                ]
 
     liveData:
         enable: yes

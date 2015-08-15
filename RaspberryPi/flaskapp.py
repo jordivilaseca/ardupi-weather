@@ -64,7 +64,7 @@ def home():
 	liveDataEnable = cfg['webserver']['liveData']['enable']
 	if liveDataEnable:
 		numPills += 1
-	return render_template('index.html', image_name='static/img/header.jpg', historyChart=cm.getChart('history'), historyEnable = historyEnable, liveData = liveData, liveDataEnable = liveDataEnable, dailyHistoryEnable = dailyHistoryEnable, numPills = numPills)
+	return render_template('index.html', image_name='static/img/header.jpg', historyChart=cm.getChart('history'), historyEnable = historyEnable, liveData = liveData, liveDataEnable = liveDataEnable, dailyHistoryChart = cm.getChart('dailyHistory'), dailyHistoryEnable = dailyHistoryEnable, numPills = numPills)
 
 @socketio.on('connect', namespace='/test')
 def connect():
