@@ -13,7 +13,9 @@ class nrf24l01pConn:
         self.radio = RF24(RPI_BPLUS_GPIO_J8_15, RPI_BPLUS_GPIO_J8_24, BCM2835_SPI_SPEED_8MHZ)
 
         self.radio.begin()
+        self.radio.setPALevel(RF24_PA_MAX)
         self.radio.enableDynamicPayloads()
+        self.radio.setDataRate( RF24_250KBPS )
         self.radio.setRetries(5,options['repetitions'])
 
         self.radio.openWritingPipe(pipes[1])
