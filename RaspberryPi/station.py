@@ -1,14 +1,26 @@
 #!/usr/bin/python
 
-from config import cfg, dataPath
+from config import cfg, dataPath, logPath
 from arduino.arduino import arduino
 from database import databaseController
 import os
 from terminal import terminal
 from alarm import alarm
 import datetime
+import logging
+from logging.handlers import TimedRotatingFileHandler
 import time
 import json
+
+LOG_FILE = logPath + 'station.log'
+handler = TimedRotatingFileHandler(LOG_FILE, when="d", interval=7, backupCount=6)
+handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+
+logger = logging.getLogger('station')
+logger.setLevel(logging.WARNING)
+
+logger.addHandler(handler)
+
 
 def getDatetime():
 	return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
@@ -25,36 +37,30 @@ def jsonTimestamp(stringTime, isDate):
 	else:
 		return time.mktime(datetime.datetime.strptime(stringTime, '%Y-%m-%d %H:%M:%S.%f').timetuple())*1000
 
-def updateJsonFile(jsonFilePath, dataHeader, newValues, isDate = False):
+def updateJsonFile(jsonFilePath, dataHeader, newValues, nextUpdate, isDate = False):
 	# Read data
 	with open(jsonFilePath, 'r') as jsonFile:
 		data = json.load(jsonFile)
 
 	# Update data dictionary
 	newValuesList = [newValues[key] for key in dataHeader]
-	data.append([jsonTimestamp(newValues['date'], isDate),newValuesList])
+	data['data'].append([jsonTimestamp(newValues['date'], isDate),newValuesList])
+
+	# set new update time
+	data['nextUpdate'] = nextUpdate
 
 	# Update file
 	with open(jsonFilePath, 'w') as jsonFile:
 		json.dump(data, jsonFile)
 
-def createFile(filePath):
+def createFile(filePath, initData):
 	if not os.path.exists(filePath):
 		with open(filePath, 'w+') as jsonFile:
-			jsonFile.write('[]')
+			jsonFile.write(initData)
 
 def printSensor(sensor, value):
 	date = getDatetime()
 	print (date, sensor, value)
-
-def processSensors(sensSum, sensNum):
-	d = {'date' : getDatetime()}
-	for elem in sensSum.keys():
-		if sensNum[elem] == 0:
-			d[elem] = None
-		else:
-			d[elem]= round(sensSum[elem]/sensNum[elem], 1)
-	return d
 
 class station:
 	def __init__(self):
@@ -120,7 +126,7 @@ class station:
 			self.sensorNum = dict.fromkeys(self.sensorTypes, 0)
 
 			update = history['updateEvery']
-			self.alarms.add(self.updateHistory, update['d'], update['h'], update['m'], update['s'])
+			self.alarms.add('updateHistory', self.updateHistory, update['d'], update['h'], update['m'], update['s'])
 
 			self.newValueFunctions.append(self.updateHistoryData)
 
@@ -138,7 +144,7 @@ class station:
 			self.dailyHistoryDBName = daily['name']
 			self.dbc.createDataContainer(self.dailyHistoryDBName, self.dbDailyHistoryHeader)
 
-			self.alarms.addDaily(self.updateDailyHistoryDatabase)
+			self.alarms.addDaily('updateDailyHistory', self.updateDailyHistoryDatabase)
 
 	def initialitzeCurrentData(self, currentData):
 		if currentData['enable']:
@@ -147,7 +153,7 @@ class station:
 			self.currentDataValues = {}
 
 			update = currentData['updateEvery']
-			self.alarms.add(self.updateCurrentDataFile, update['d'], update['h'], update['m'], update['s'])
+			self.alarms.add('updateCurrentData', self.updateCurrentDataFile, update['d'], update['h'], update['m'], update['s'])
 
 			self.newValueFunctions.append(self.updateCurrentData)
 
@@ -168,7 +174,8 @@ class station:
 			self.historyJsonFilePath = dataPath + 'history.json'
 
 			# check if the file exists, in case it does not exists we create it
-			createFile(self.historyJsonFilePath)
+			initData = '{ "data" : [], "nextUpdate" : "' + self.alarms.getNextUpdateStr('updateDailyHistory') + '"}'
+			createFile(self.historyJsonFilePath, initData)
 
 			self.historyJsonDataHeader = []
 			for panel in historyChart['panels']:
@@ -182,7 +189,8 @@ class station:
 			self.dailyHistoryJsonFilePath = dataPath + 'dailyHistory.json'
 
 			# check if the file exists, in case it does not exists we create it
-			createFile(self.dailyHistoryJsonFilePath)
+			initData = '{ "data" : [], "nextUpdate" : "' + self.alarms.getNextUpdateStr('updateDailyHistory') + '"}'
+			createFile(self.dailyHistoryJsonFilePath,initData)
 
 			self.dailyHistoryJsonDataHeader = []
 			for data in self.historyJsonDataHeader:
@@ -205,18 +213,29 @@ class station:
 		with open(self.currentDataFile, 'w+') as f:    
 			json.dump(self.currentDataValues, f)
 
-		print('Updated current data file')
+		logger.info('Updated current data file')
 
 	def updateHistory(self):
-		newValues = processSensors(self.sensorSum, self.sensorNum)
+		newValues = {'date' : getDatetime()}
+		nullKeys = []
+		for elem in self.sensorSum.keys():
+			if self.sensorNum[elem] == 0:
+				newValues[elem] = None
+				nullKeys.append(elem)
+			else:
+				newValues[elem]= round(self.sensorSum[elem]/self.sensorNum[elem], 1)
+
+		if len(nullKeys) > 0:
+			logger.warning('History update: No data received for %s', ','.join(nullKeys))
 
 		# Update database
 		self.dbc.insertDataEntry(self.historyDataName, newValues)
 
 		# Update json file
 		if self.historyJson:
-			updateJsonFile(self.historyJsonFilePath, self.historyJsonDataHeader, newValues)
-		print('Inserted data to history')
+			nextUpdate = self.alarms.getNextUpdateStr('updateHistory')
+			updateJsonFile(self.historyJsonFilePath, self.historyJsonDataHeader, newValues, nextUpdate)
+		logger.info('Inserted data to history')
 
 		# Reset data
 		self.sensorSum = dict.fromkeys(self.sensorSum, 0)
@@ -265,7 +284,7 @@ class station:
 		# Update json file
 		if self.dailyHistoryJson:
 			updateJsonFile(self.dailyHistoryJsonFilePath, self.dailyHistoryJsonDataHeader, dailyData, True)
-		print('Inserted data to daily history')
+		logger.info('Inserted data to daily history')
 
 	def run(self):
 		while True:

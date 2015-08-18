@@ -1,11 +1,12 @@
 import yaml
 import os
 
-appPath = os.path.dirname(os.path.realpath(__file__))
-flaskPath = appPath + '/flaskfiles/'
+appPath = os.path.dirname(os.path.realpath(__file__)) + '/'
+flaskPath = appPath + 'flaskfiles/'
 staticFlaskPath = flaskPath + 'static'
 templatesFlaskPath = flaskPath + 'templates'
-dataPath = appPath + '/data/'
+dataPath = appPath + 'data/'
+logPath = appPath + 'log/'
 
 def getPath(path):
 	return dataPath if path == 'default' else path

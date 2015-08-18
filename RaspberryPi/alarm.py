@@ -12,32 +12,35 @@ def getCurrentTime():
 class alarm:
 
 	def __init__(self):
-		self.nextUpdates = []
-		self.updateTimes = []
-		self.functions = []
+		self.nextUpdates = {}
+		self.updateTimes = {}
+		self.functions = {}
 
-	def add(self, func, d, h, m, s):
-		self.functions.append(func)
-		self.nextUpdates.append(getCurrentTime())
-		self.updateTimes.append(timedelta(days = d, hours = h, minutes = m, seconds = s))
-		self.update(len(self.nextUpdates)-1)
+	def add(self, id, func, d, h, m, s):
+		self.functions[id] = func
+		self.nextUpdates[id] = getCurrentTime()
+		self.updateTimes[id] = timedelta(days = d, hours = h, minutes = m, seconds = s)
+		self.update(id)
 
-	def addDaily(self, func):
-		self.functions.append(func)
-		self.nextUpdates.append(datetime.combine(getCurrentDate() + timedelta(days=1), datetime.min.time()))
-		self.updateTimes.append(timedelta(days = 1))
+	def addDaily(self, id, func):
+		self.functions[id] = func
+		self.nextUpdates[id] = datetime.combine(getCurrentDate() + timedelta(days=1), datetime.min.time())
+		self.updateTimes[id] = timedelta(days = 1)
 
-	def update(self, pos):
-		self.nextUpdates[pos] += self.updateTimes[pos]
+	def update(self, id):
+		self.nextUpdates[id] += self.updateTimes[id]
 
-	def isUpdateTime(self,pos):
-		return self.nextUpdates[pos] <= getCurrentTime()
+	def getNextUpdateStr(self, id):
+		return self.nextUpdates[id].strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+	def isUpdateTime(self,id):
+		return self.nextUpdates[id] <= getCurrentTime()
 
 	def getThingsToDo(self):
 		funcs = []
-		for i in range(len(self.nextUpdates)):
-			if self.isUpdateTime(i):
-				funcs.append(self.functions[i])
-				self.update(i)
+		for key in self.nextUpdates.keys():
+			if self.isUpdateTime(key):
+				funcs.append(self.functions[key])
+				self.update(key)
 		return funcs
 		
