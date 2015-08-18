@@ -214,10 +214,12 @@ class station:
 	#Functions to execute at a determined time	
 
 	def updateCurrentDataFile(self):
-		with open(self.currentDataFile, 'w+') as f:    
-			json.dump(self.currentDataValues, f)
+                data = {"newtUpdate" : self.alarms.getNextUpdateStr('updateCurrentData'), "data": self.currentDataValues}
+                	        
+                with open(self.currentDataFile, 'w+') as f:
+                    json.dump(data, f)
 
-		logger.info('Updated current data file')
+                logger.info('Updated current data file')
 
 	def updateHistory(self):
 		newValues = {'date' : getDatetime()}
