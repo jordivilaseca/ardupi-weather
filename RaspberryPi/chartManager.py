@@ -18,7 +18,7 @@ def getHistoryChart(chartCFG):
 	for panel in chartCFG['panels']:
 		for value in panel['values']:
 			tooltip = {'valueSuffix' : panel['units'].encode('utf-8')}
-			data = [[d[0],d[1][i]] for d in rawData]
+			data = [[d[0],d[1][i]] for d in rawData['data']]
 			series.append({'type':panel['type'],'name':value,'data': data, 'yAxis': axisNum, 'tooltip' : tooltip ,'connectNulls': 'true', 'color':colors[i]})
 			i += 1
 		currYAxis = {}
@@ -55,11 +55,11 @@ def getDailyHistoryChart(chartCFG):
 		tooltip = {'valueSuffix' : panel['units'].encode('utf-8')}
 		for value in panel['values']:
 			if chartCFG['showAVG']:
-				AVGdata = [[d[0],d[1][i*3+2]] for d in rawData]
+				AVGdata = [[d[0],d[1][i*3+2]] for d in rawData['data']]
 				series.append({'type': 'spline', 'name':value + ' AVG', 'yAxis': axisNum, 'tooltip': tooltip,'connectNulls': 'true', 'data': AVGdata, 'zIndex': 1, 'color': colors[i], 'minTickInterval': 24 * 3600 * 1000})
 
 			if chartCFG['showMINMAX']:
-				MINMAXdata = [[d[0],d[1][i*3],d[1][i*3+1]] for d in rawData]
+				MINMAXdata = [[d[0],d[1][i*3],d[1][i*3+1]] for d in rawData['data']]
 				series.append({'type' : 'areasplinerange', 'name' : value + ' range', 'yAxis': axisNum, 'tooltip' : tooltip, 'connectNulls' : 'true', 'data' : MINMAXdata, 'zIndex': 0, 'lineWidth': 0, 'linkedTo': ':previous', 'fillOpacity': 0.3, 'color': colors[i], 'minTickInterval': 24 * 3600 * 1000})
 			i += 1
 		currYAxis = {}

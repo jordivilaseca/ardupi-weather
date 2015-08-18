@@ -14,10 +14,10 @@ import json
 
 LOG_FILE = logPath + 'station.log'
 handler = TimedRotatingFileHandler(LOG_FILE, when="d", interval=7, backupCount=6)
-handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s : %(message)s'))
 
 logger = logging.getLogger('station')
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.INFO)
 
 logger.addHandler(handler)
 
@@ -144,7 +144,7 @@ class station:
 			self.dailyHistoryDBName = daily['name']
 			self.dbc.createDataContainer(self.dailyHistoryDBName, self.dbDailyHistoryHeader)
 
-			self.alarms.addDaily('updateDailyHistory', self.updateDailyHistoryDatabase)
+			self.alarms.addDaily('updateDailyHistory', self.updateDailyHistory)
 
 	def initialitzeCurrentData(self, currentData):
 		if currentData['enable']:
@@ -156,6 +156,10 @@ class station:
 			self.alarms.add('updateCurrentData', self.updateCurrentDataFile, update['d'], update['h'], update['m'], update['s'])
 
 			self.newValueFunctions.append(self.updateCurrentData)
+
+			# check if the file exists, in case it does not exists we create it
+			initData = '{ "data" : {}, "nextUpdate" : "' + self.alarms.getNextUpdateStr('updateCurrentData') + '"}'
+			createFile(self.currentDataFile, initData)
 
 	def configureWebserverSupport(self, webserver, history, dailyHistory):
 		if webserver['enable']:
@@ -174,7 +178,7 @@ class station:
 			self.historyJsonFilePath = dataPath + 'history.json'
 
 			# check if the file exists, in case it does not exists we create it
-			initData = '{ "data" : [], "nextUpdate" : "' + self.alarms.getNextUpdateStr('updateDailyHistory') + '"}'
+			initData = '{ "data" : [], "nextUpdate" : "' + self.alarms.getNextUpdateStr('updateHistory') + '"}'
 			createFile(self.historyJsonFilePath, initData)
 
 			self.historyJsonDataHeader = []
@@ -225,8 +229,10 @@ class station:
 			else:
 				newValues[elem]= round(self.sensorSum[elem]/self.sensorNum[elem], 1)
 
-		if len(nullKeys) > 0:
-			logger.warning('History update: No data received for %s', ','.join(nullKeys))
+		if len(nullKeys) != 0:
+			logger.warning('-History update- No data received for %s', ', '.join(nullKeys))
+		
+		logger.info('-History update- %s', ', '.join("%s:%i" % (k,v) for k,v in self.sensorNum.items()))
 
 		# Update database
 		self.dbc.insertDataEntry(self.historyDataName, newValues)
@@ -241,7 +247,7 @@ class station:
 		self.sensorSum = dict.fromkeys(self.sensorSum, 0)
 		self.sensorNum = dict.fromkeys(self.sensorNum, 0)
 
-	def updateDailyHistoryDatabase(self):
+	def updateDailyHistory(self):
 		# Query to database
 		lastDay = datetime.date.today() - datetime.timedelta(days=1)
 		minVal = datetime.datetime.combine(lastDay, datetime.datetime.min.time())
@@ -283,7 +289,8 @@ class station:
 
 		# Update json file
 		if self.dailyHistoryJson:
-			updateJsonFile(self.dailyHistoryJsonFilePath, self.dailyHistoryJsonDataHeader, dailyData, True)
+			nextUpdate = self.alarms.getNextUpdateStr('updateDailyHistory')
+			updateJsonFile(self.dailyHistoryJsonFilePath, self.dailyHistoryJsonDataHeader, dailyData, nextUpdate, True)
 		logger.info('Inserted data to daily history')
 
 	def run(self):

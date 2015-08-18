@@ -37,11 +37,11 @@ def liveUpdatesThread():
 
 	if cfg['webserver']['charts']['history']['enable']:
 		update = cfg['data']['history']['updateEvery']
-		alarms.add(sendHistoryData, update['d'], update['h'], update['m'], update['s'])
+		alarms.add('sendHistoryData', sendHistoryData, update['d'], update['h'], update['m'], update['s'])
 
 	if cfg['webserver']['liveData']['enable']:
 		update = cfg['webserver']['liveData']['updateEvery']
-		alarms.add(sendCurrentData, update['d'], update['h'], update['m'], update['s'])
+		alarms.add('sendCurrentData', sendCurrentData, update['d'], update['h'], update['m'], update['s'])
 	
 	while not thread_stop_event.isSet():
 		toDo = alarms.getThingsToDo()
@@ -53,7 +53,7 @@ cm = chartManager()
 
 @app.route('/')
 def home():
-	liveData = readJsonData(dataPath + 'currentData.json')
+	liveData = readJsonData(dataPath + 'currentData.json')['data']
 	numPills = 0
 	historyEnable = cfg['webserver']['charts']['history']['enable']
 	if historyEnable:
