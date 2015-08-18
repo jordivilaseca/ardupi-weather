@@ -15,18 +15,6 @@ $(document).ready(function() {
         rangeSelector: {
 
                 buttons: [{
-                    type: 'minute',
-                    count: 30,
-                    text: '30mi'
-                }, {
-                    type: 'hour',
-                    count: 5,
-                    text: '5h'
-                }, {
-                    type: 'day',
-                    count: 1,
-                    text: '1d'
-                }, {
                     type: 'month',
                     count: 1,
                     text: '1mo'
@@ -38,7 +26,7 @@ $(document).ready(function() {
                     type: 'all',
                     text: 'All'
                 }],
-                selected: 2
+                selected: 1
         },
 
         title: {text: dhChart_name},
