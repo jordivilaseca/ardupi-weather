@@ -6,7 +6,7 @@
 #define count(x) sizeof(x)/sizeof(unsigned long)
 #define groundPin A0
 
-#define CONNECTION_TYPE 0 // 0 -> USB, 1 -> 433mhz, 2 -> nrf24l01+
+#define CONNECTION_TYPE 2 // 0 -> USB, 1 -> 433mhz, 2 -> nrf24l01+
 
 #if CONNECTION_TYPE == 1
   #include <VirtualWire.h>
@@ -201,6 +201,8 @@ void setup() {
   vw_setup(2000);       // Bits per sec
 #elif CONNECTION_TYPE == 2
   radio.begin();
+  radio.setPALevel(RF24_PA_MAX);
+  radio.setDataRate( RF24_250KBPS ) ;
   radio.enableDynamicPayloads();
   radio.setRetries(5,15);
   radio.openWritingPipe(pipes[0]);
