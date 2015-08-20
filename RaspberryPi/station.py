@@ -13,7 +13,7 @@ import time
 import json
 
 LOG_FILE = logPath + 'station.log'
-handler = TimedRotatingFileHandler(LOG_FILE, when="d", interval=7, backupCount=6)
+handler = TimedRotatingFileHandler(LOG_FILE, when="midnight", backupCount=6)
 handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s : %(message)s'))
 
 logger = logging.getLogger('station')
