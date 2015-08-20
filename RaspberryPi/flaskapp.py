@@ -1,10 +1,11 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory, Response, safe_join
 
 import json
+import os.path
 import time
 from threading import Thread, Event
 from chartManager import chartManager
-from config import cfg, templatesFlaskPath, staticFlaskPath, dataPath
+from config import cfg, templatesFlaskPath, staticFlaskPath, dataPath, logPath
 from flask.ext.socketio import SocketIO, emit
 from alarm import alarm
 import logging
@@ -23,11 +24,11 @@ def readJsonData(filePath):
 	return data
 
 def sendHistoryData():
-	data = readJsonData(dataPath + 'history.json')
+	data = readJsonData(dataPath + 'history.json')['data']
 	socketio.emit('historyUpdate',data[-1],namespace='/test')
 
 def sendCurrentData():
-	data = readJsonData(dataPath + 'currentData.json')
+	data = readJsonData(dataPath + 'currentData.json')['data']
 	socketio.emit('currentDataUpdate',data,namespace='/test')
 
 functions = {'sendHistoryData': sendHistoryData, 'sendCurrentData': sendCurrentData}
@@ -65,6 +66,25 @@ def home():
 	if liveDataEnable:
 		numPills += 1
 	return render_template('index.html', image_name='static/img/header.jpg', historyChart=cm.getChart('history'), historyEnable = historyEnable, liveData = liveData, liveDataEnable = liveDataEnable, dailyHistoryChart = cm.getChart('dailyHistory'), dailyHistoryEnable = dailyHistoryEnable, numPills = numPills)
+
+@app.route('/log/<name>')
+def log(name):
+	filePath = safe_join(logPath, name)
+	if os.path.isfile(filePath):
+		with open(filePath, 'r') as f:
+			data = f.read()
+		return Response(data, mimetype='text/plain')
+	else:
+		return "File not found"
+
+@app.route('/data/<name>.json')
+def data(name):
+	filePath = safe_join(dataPath, name + '.json')
+	if os.path.isfile(filePath):
+		with open(filePath, 'r') as f:
+			data = f.read()
+		return Response(data, mimetype='application/json')
+	return (name)
 
 @socketio.on('connect', namespace='/test')
 def connect():
