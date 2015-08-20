@@ -54,9 +54,8 @@ def updateJsonFile(jsonFilePath, dataHeader, newValues, nextUpdate, isDate = Fal
 		json.dump(data, jsonFile)
 
 def createFile(filePath, initData):
-	if not os.path.exists(filePath):
-		with open(filePath, 'w+') as jsonFile:
-			jsonFile.write(initData)
+	with open(filePath, 'w+') as jsonFile:
+		jsonFile.write(initData)
 
 def printSensor(sensor, value):
 	date = getDatetime()
@@ -96,6 +95,10 @@ class station:
 
 		#Initialize terminal input
 		self.t = terminal()
+
+	def parseDatabase(self, containerName, dataHeader):
+		rawData = self.dbc.queryAll(containerName)
+		return [[entry['date'], [entry[key] for key in dataHeader]] for entry in rawData]
 
 	#Configuration functions
 
@@ -141,8 +144,8 @@ class station:
 			self.dbDailyHistoryHeader.update({key + 'MIN': value for key,value in self.sensorTypes.items()})
 			self.dbDailyHistoryHeader.update({key + 'AVG': value for key,value in self.sensorTypes.items()})
 
-			self.dailyHistoryDBName = daily['name']
-			self.dbc.createDataContainer(self.dailyHistoryDBName, self.dbDailyHistoryHeader)
+			self.dailyHistoryDataName = daily['name']
+			self.dbc.createDataContainer(self.dailyHistoryDataName, self.dbDailyHistoryHeader)
 
 			self.alarms.addDaily('updateDailyHistory', self.updateDailyHistory)
 
@@ -159,7 +162,8 @@ class station:
 
 			# check if the file exists, in case it does not exists we create it
 			initData = '{ "data" : {}, "nextUpdate" : "' + self.alarms.getNextUpdateStr('updateCurrentData') + '"}'
-			createFile(self.currentDataFile, initData)
+			with open(self.currentDataFile, 'w+') as jsonFile:
+				jsonFile.write(initData)
 
 	def configureWebserverSupport(self, webserver, history, dailyHistory):
 		if webserver['enable']:
@@ -177,14 +181,16 @@ class station:
 		if historyChart['enable']:
 			self.historyJsonFilePath = dataPath + 'history.json'
 
-			# check if the file exists, in case it does not exists we create it
-			initData = '{ "data" : [], "nextUpdate" : "' + self.alarms.getNextUpdateStr('updateHistory') + '"}'
-			createFile(self.historyJsonFilePath, initData)
-
 			self.historyJsonDataHeader = []
 			for panel in historyChart['panels']:
 				self.historyJsonDataHeader.extend(list(panel['values']))
 			self.historyJson = True
+
+			# dump data from database to a json file
+			data = self.parseDatabase(self.historyDataName, self.historyJsonDataHeader)
+			initData = { "data" : data, "nextUpdate" : self.alarms.getNextUpdateStr('updateHistory')}
+			with open(self.historyJsonFilePath, 'w+') as jsonFile:
+				jsonFile.write(json.dumps(initData))
 		else:
 			self.historyJson = False
 
@@ -192,14 +198,16 @@ class station:
 		if dailyHistoryChart['enable']:
 			self.dailyHistoryJsonFilePath = dataPath + 'dailyHistory.json'
 
-			# check if the file exists, in case it does not exists we create it
-			initData = '{ "data" : [], "nextUpdate" : "' + self.alarms.getNextUpdateStr('updateDailyHistory') + '"}'
-			createFile(self.dailyHistoryJsonFilePath,initData)
-
 			self.dailyHistoryJsonDataHeader = []
 			for data in self.historyJsonDataHeader:
 				self.dailyHistoryJsonDataHeader.extend([data + 'MIN', data + 'MAX', data + 'AVG'])
 			self.dailyHistoryJson = True
+
+			# dump data from database to a json file
+			data = self.parseDatabase(self.dailyHistoryDataName, self.dailyHistoryJsonDataHeader)
+			initData = { "data" : data, "nextUpdate" : self.alarms.getNextUpdateStr('updateDailyHistory')}
+			with open(self.dailyHistoryJsonFilePath, 'w+') as jsonFile:
+				jsonFile.write(json.dumps(initData))
 		else:
 			self.dailyHistoryJson = False
 
@@ -217,7 +225,7 @@ class station:
 		with open(self.currentDataFile, 'w+') as f:    
 			json.dump(self.currentDataValues, f)
 
-		logger.info('Updated current data file')
+		print('Updated current data file')
 
 	def updateHistory(self):
 		newValues = {'date' : getDatetime()}
@@ -241,7 +249,7 @@ class station:
 		if self.historyJson:
 			nextUpdate = self.alarms.getNextUpdateStr('updateHistory')
 			updateJsonFile(self.historyJsonFilePath, self.historyJsonDataHeader, newValues, nextUpdate)
-		logger.info('Inserted data to history')
+		print('Inserted data to history')
 
 		# Reset data
 		self.sensorSum = dict.fromkeys(self.sensorSum, 0)
@@ -278,20 +286,20 @@ class station:
 		# Calculus of AVG
 		for key in self.sensorTypes.keys():
 			if numValues[key] != 0:
-				dailyData[key + 'AVG'] = dailyData[key + 'AVG']/numValues[key]
+				dailyData[key + 'AVG'] = round(dailyData[key + 'AVG']/numValues[key],1)
 			else:
 				# there is no value registered for this sensor in 'lastDay'
 				dailyData[key + 'AVG'] = None
 				dailyData[key + 'MIN'] = None
 				dailyData[key + 'MAX'] = None
 
-		self.dbc.insertDataEntry(self.dailyHistoryDBName, dailyData)
+		self.dbc.insertDataEntry(self.dailyHistoryDataName, dailyData)
 
 		# Update json file
 		if self.dailyHistoryJson:
 			nextUpdate = self.alarms.getNextUpdateStr('updateDailyHistory')
 			updateJsonFile(self.dailyHistoryJsonFilePath, self.dailyHistoryJsonDataHeader, dailyData, nextUpdate, True)
-		logger.info('Inserted data to daily history')
+		print('Inserted data to daily history')
 
 	def run(self):
 		while True:
