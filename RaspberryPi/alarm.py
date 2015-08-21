@@ -27,8 +27,18 @@ class alarm:
 		self.nextUpdates[id] = datetime.combine(getCurrentDate() + timedelta(days=1), datetime.min.time())
 		self.updateTimes[id] = timedelta(days = 1)
 
+	def addOneTime(self, id, func, dateTime):
+		self.functions[id] = func
+		self.nextUpdates[id] = dateTime
+		self.updateTimes[id] = None
+
 	def update(self, id):
 		self.nextUpdates[id] += self.updateTimes[id]
+
+	def remove(self, id):
+		del self.nextUpdates[id]
+		del self.updateTimes[id]
+		del self.functions[id]
 
 	def getNextUpdateStr(self, id):
 		return self.nextUpdates[id].strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
@@ -41,6 +51,9 @@ class alarm:
 		for key in self.nextUpdates.keys():
 			if self.isUpdateTime(key):
 				funcs.append(self.functions[key])
-				self.update(key)
+				if self.updateTimes[key] != None:
+					self.update(key)
+				else:
+					self.remove(key)
 		return funcs
 		

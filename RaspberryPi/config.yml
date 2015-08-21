@@ -11,7 +11,7 @@ arduino:
 
     usedConnection: usb
     usb:    
-        port : 'ttyUSB0'
+        port : 'ttyACM0'
         baud : 57600
     433mhz:
         rxPin: 27   # GPIO pin
@@ -40,7 +40,7 @@ data:
     history:
         enable: yes
         name: "history"
-        updateEvery : {d : 0, h : 0, m : 2, s : 0}
+        updateEvery : {d : 0, h : 0, m : 30, s : 0}
 
     # It can only be enabled if history is enabled
     dailyHistory:
@@ -56,6 +56,7 @@ webserver:
     enable: yes
     host: '0.0.0.0'
     port: 5000
+    updateOffset: 5 # Time in seconds, it is the offset between new recordings and live web updates
     charts:
         colors: ['#2f7ed8', '#0d233a', '#8bbc21', '#910000', '#1aadce', '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a']
         history:

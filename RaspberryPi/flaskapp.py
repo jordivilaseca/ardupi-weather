@@ -3,6 +3,7 @@ from flask import Flask, render_template, send_from_directory, Response, safe_jo
 import json
 import os.path
 import time
+import datetime
 from threading import Thread, Event
 from chartManager import chartManager
 from config import cfg, templatesFlaskPath, staticFlaskPath, dataPath, logPath
@@ -24,31 +25,47 @@ def readJsonData(filePath):
 	return data
 
 def sendHistoryData():
-	data = readJsonData(dataPath + 'history.json')['data']
-	socketio.emit('historyUpdate',data[-1],namespace='/test')
+	global alarms
+	data = readJsonData(dataPath + 'history.json')
+	socketio.emit('historyUpdate',data['data'][-1],namespace='/test')
+
+	offset = cfg['webserver']['updateOffset']
+	nextUpdate = datetime.datetime.strptime(data['nextUpdate'], "%Y-%m-%d %H:%M:%S.%f")
+	alarms.addOneTime('sendHistoryData', sendHistoryData, nextUpdate + datetime.timedelta(seconds=offset))
 
 def sendCurrentData():
-	data = readJsonData(dataPath + 'currentData.json')['data']
-	socketio.emit('currentDataUpdate',data,namespace='/test')
+	global alarms
+	data = readJsonData(dataPath + 'currentData.json')
+	socketio.emit('currentDataUpdate',data['data'],namespace='/test')
 
-functions = {'sendHistoryData': sendHistoryData, 'sendCurrentData': sendCurrentData}
+	offset = cfg['webserver']['updateOffset']
+	nextUpdate = datetime.datetime.strptime(data['nextUpdate'], "%Y-%m-%d %H:%M:%S.%f")
+	alarms.addOneTime('sendCurrentData', sendCurrentData, nextUpdate + datetime.timedelta(seconds=offset))
+
+alarms = None
 
 def liveUpdatesThread():
+	global alarms
 	alarms = alarm()
+	offset = cfg['webserver']['updateOffset']
 
 	if cfg['webserver']['charts']['history']['enable']:
-		update = cfg['data']['history']['updateEvery']
-		alarms.add('sendHistoryData', sendHistoryData, update['d'], update['h'], update['m'], update['s'])
+		nextUpdateStr = readJsonData(dataPath + 'history.json')['nextUpdate']
+		nextUpdate = datetime.datetime.strptime(nextUpdateStr, "%Y-%m-%d %H:%M:%S.%f")
+		alarms.addOneTime('sendHistoryData', sendHistoryData, nextUpdate + datetime.timedelta(seconds=offset))
 
 	if cfg['webserver']['liveData']['enable']:
-		update = cfg['webserver']['liveData']['updateEvery']
-		alarms.add('sendCurrentData', sendCurrentData, update['d'], update['h'], update['m'], update['s'])
+		nextUpdateStr = readJsonData(dataPath + 'currentData.json')['nextUpdate']
+		nextUpdate = datetime.datetime.strptime(nextUpdateStr, "%Y-%m-%d %H:%M:%S.%f")
+		alarms.addOneTime('sendCurrentData', sendCurrentData, nextUpdate + datetime.timedelta(seconds=offset))
 	
 	while not thread_stop_event.isSet():
 		toDo = alarms.getThingsToDo()
 		for func in toDo:
 			func()
 		time.sleep(5)
+
+	del alarms
 
 cm = chartManager()
 

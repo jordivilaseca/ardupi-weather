@@ -222,7 +222,7 @@ class station:
     #Functions to execute at a determined time  
 
     def updateCurrentDataFile(self):
-        data = {"newtUpdate" : self.alarms.getNextUpdateStr('updateCurrentData'), "data": self.currentDataValues}
+        data = {"nextUpdate" : self.alarms.getNextUpdateStr('updateCurrentData'), "data": self.currentDataValues}
         with open(self.currentDataFile, 'w+') as f:
             json.dump(data, f)
 
