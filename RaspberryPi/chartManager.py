@@ -6,7 +6,8 @@ def readJsonData(filePath):
 		data = json.load(jsonFile)
 	return data
 
-def getHistoryChart(chartCFG):
+def createHistoryChart():
+	chartCFG = cfg['webserver']['charts']['history']
 	colors = cfg['webserver']['charts']['colors']
 	rawData = readJsonData(dataPath + 'history.json')
 	chart = {}
@@ -18,8 +19,7 @@ def getHistoryChart(chartCFG):
 	for panel in chartCFG['panels']:
 		for value in panel['values']:
 			tooltip = {'valueSuffix' : panel['units'].encode('utf-8')}
-			data = [[d[0],d[1][i]] for d in rawData['data']]
-			series.append({'type':panel['type'],'name':value,'data': data, 'yAxis': axisNum, 'tooltip' : tooltip ,'connectNulls': 'true', 'color':colors[i]})
+			series.append({'type':panel['type'],'name':value,'data': [], 'yAxis': axisNum, 'tooltip' : tooltip ,'connectNulls': 'true', 'color':colors[i]})
 			i += 1
 		currYAxis = {}
 		currYAxis['title'] = {'text': panel['name']}
@@ -42,7 +42,8 @@ def getHistoryChart(chartCFG):
 	chart['yAxis'] = yAxis
 	return chart
 
-def getDailyHistoryChart(chartCFG):
+def createDailyHistoryChart():
+	chartCFG = cfg['webserver']['charts']['dailyHistory']
 	colors = cfg['webserver']['charts']['colors']
 	rawData = readJsonData(dataPath + 'dailyHistory.json')
 	chart = {}
@@ -55,12 +56,10 @@ def getDailyHistoryChart(chartCFG):
 		tooltip = {'valueSuffix' : panel['units'].encode('utf-8')}
 		for value in panel['values']:
 			if chartCFG['showAVG']:
-				AVGdata = [[d[0],d[1][i*3+2]] for d in rawData['data']]
-				series.append({'type': 'spline', 'name':value + ' AVG', 'yAxis': axisNum, 'tooltip': tooltip,'connectNulls': 'true', 'data': AVGdata, 'zIndex': 1, 'color': colors[i], 'minTickInterval': 24 * 3600 * 1000})
+				series.append({'type': 'spline', 'name':value + ' AVG', 'yAxis': axisNum, 'tooltip': tooltip,'connectNulls': 'true', 'data': [], 'zIndex': 1, 'color': colors[i], 'minTickInterval': 24 * 3600 * 1000})
 
 			if chartCFG['showMINMAX']:
-				MINMAXdata = [[d[0],d[1][i*3],d[1][i*3+1]] for d in rawData['data']]
-				series.append({'type' : 'areasplinerange', 'name' : value + ' range', 'yAxis': axisNum, 'tooltip' : tooltip, 'connectNulls' : 'true', 'data' : MINMAXdata, 'zIndex': 0, 'lineWidth': 0, 'linkedTo': ':previous', 'fillOpacity': 0.3, 'color': colors[i], 'minTickInterval': 24 * 3600 * 1000})
+				series.append({'type' : 'areasplinerange', 'name' : value + ' range', 'yAxis': axisNum, 'tooltip' : tooltip, 'connectNulls' : 'true', 'data' : [], 'zIndex': 0, 'lineWidth': 0, 'linkedTo': ':previous', 'fillOpacity': 0.3, 'color': colors[i], 'minTickInterval': 24 * 3600 * 1000})
 			i += 1
 		currYAxis = {}
 		currYAxis['title'] = {'text': panel['name']}
@@ -81,22 +80,16 @@ def getDailyHistoryChart(chartCFG):
 	chart['series'] = series
 	chart['chartName'] = chartCFG['name']
 	chart['yAxis'] = yAxis
-	return chart
-
-def getChart(key,chartCFG):
-	if not chartCFG['enable']:
-		return None
-
-	if key == 'history':
-		return getHistoryChart(chartCFG);
-	else:
-		return getDailyHistoryChart(chartCFG);
-	
+	return chart	
 
 class chartManager:
 
 	def __init__(self):
-		pass
+		self.charts = {}
+		if cfg['webserver']['charts']['history']['enable']:
+			self.charts['history'] = createHistoryChart()
+		if cfg['webserver']['charts']['dailyHistory']['enable']:
+			self.charts['dailyHistory'] = createDailyHistoryChart()
 
 	def getChart(self, id):
-		return getChart(id, cfg['webserver']['charts'][id])
+		return self.charts[id]
