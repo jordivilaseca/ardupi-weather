@@ -86,6 +86,13 @@ def data(name):
 		return Response(data, mimetype='application/json')
 	return (name)
 
+@app.route('/database')
+def send_database():
+	if cfg['data']['usedDB'] == 'sqlite':
+		return send_from_directory(dataPath, cfg['data']['name'])
+	else:
+		return ""
+
 @socketio.on('connect', namespace='/test')
 def connect():
 	global thread
