@@ -1,18 +1,18 @@
 body
 {
-  margin: 0px;
+  padding-top: 50px;
   width: 100%;
   background-color: #fff;
 }
 
-header{
-  width: 100%;
+.separator-small {
+  height: 10px;
+  background-color: #191919;
 }
 
-#img_header{
-  width: 100%;
-  margin: 0 auto;
-  height: 200px;
+.separator-big {
+  height: 50px;
+  background-color: #191919;
 }
 
 .navbar-custom {
@@ -30,4 +30,44 @@ header{
   vertical-align: middle;
   font-weight: 800;
   color: white; 
+}
+
+.intro-header {
+  background-color: #808080;
+  background: no-repeat center center;
+  background-attachment: scroll;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+  -o-background-size: cover;
+}
+
+@media (min-width: 1920px) {
+  .intro-header {
+    height: 650px;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1919px) {
+  .intro-header {
+    height: 500px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  .intro-header {
+    height: 350px;
+  }
+}
+
+@media (max-width: 767px) {
+  #navbar-img {
+    height: 40px;
+  }
+  .navbar-brand {
+    padding: 5px 5px 5px 5px;
+  }
+  .intro-header {
+    height: 250px;
+  }
 }

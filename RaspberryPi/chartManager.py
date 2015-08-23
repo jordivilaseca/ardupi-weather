@@ -16,9 +16,10 @@ def createHistoryChart():
 	top = 0
 	axisNum = 0
 	i = 0
+
 	for panel in chartCFG['panels']:
 		for value in panel['values']:
-			tooltip = {'valueSuffix' : panel['units'].encode('utf-8')}
+			tooltip = {'valueSuffix' : panel['units']}
 			series.append({'type':panel['type'],'name':value,'data': [], 'yAxis': axisNum, 'tooltip' : tooltip ,'connectNulls': 'true', 'color':colors[i]})
 			i += 1
 		currYAxis = {}
@@ -38,7 +39,7 @@ def createHistoryChart():
 	chart['height'] = cfg['webserver']['charts']['history']['height']
 	chart['chartID'] = 'history_chart'
 	chart['series'] = series
-	chart['chartName'] = chartCFG['name']
+	chart['name'] = chartCFG['name']
 	chart['yAxis'] = yAxis
 	return chart
 
@@ -53,7 +54,7 @@ def createDailyHistoryChart():
 	axisNum = 0
 	i = 0
 	for panel in chartCFG['panels']:
-		tooltip = {'valueSuffix' : panel['units'].encode('utf-8')}
+		tooltip = {'valueSuffix' : panel['units']}
 		for value in panel['values']:
 			if chartCFG['showAVG']:
 				series.append({'type': 'spline', 'name':value + ' AVG', 'yAxis': axisNum, 'tooltip': tooltip,'connectNulls': 'true', 'data': [], 'zIndex': 1, 'color': colors[i], 'minTickInterval': 24 * 3600 * 1000})
@@ -78,7 +79,7 @@ def createDailyHistoryChart():
 	chart['height'] = cfg['webserver']['charts']['history']['height']
 	chart['chartID'] = 'daily_history_chart'
 	chart['series'] = series
-	chart['chartName'] = chartCFG['name']
+	chart['name'] = chartCFG['name']
 	chart['yAxis'] = yAxis
 	return chart	
 

@@ -56,28 +56,29 @@ webserver:
     enable: yes
     host: '0.0.0.0'
     port: 5000
+    title: 'My weather'
     updateOffset: 5 # Time in seconds, it is the offset between new recordings and live web updates
     charts:
         colors: ['#2f7ed8', '#0d233a', '#8bbc21', '#910000', '#1aadce', '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a']
         history:
             enable: yes
-            name: 'history'
-            height: 500
+            name: 'History'
+            height: 600
             panels:
                 [
                     {
                         name : "Temperature",
                         type : "spline",
                         values : ["temperature","heatIndex"],
-                        units : "C",
+                        units : "ºC",
                         height: 23.5, #Percentage of the panel in the chart
                         offset: 0     #Offset of the panel in respect of the previous one
                     },
                     {
-                        name : "Pressure",
+                        name : "Atmospheric pressure",
                         type : "spline",
                         values : ["pressure"],
-                        units : "Pa",
+                        units : "hPa",
                         height: 23.5, #Percentage of the panel in the chart
                         offset: 2     #Offset of the panel in respect of the previous one
                     },
@@ -101,8 +102,8 @@ webserver:
                 ]
         dailyHistory:
             enable: yes
-            name: 'daily history'
-            height: 500
+            name: 'Daily history'
+            height: 600
             showAVG: yes
             showMINMAX: yes
             panels:
@@ -110,19 +111,19 @@ webserver:
                     {
                         name : "Temperature",
                         values : ["temperature","heatIndex"],
-                        units : "C",
+                        units : "ºC",
                         height: 23.5, #Percentage of the panel in the chart
                         offset: 0     #Offset of the panel in respect of the previous one
                     },
                     {
-                        name : "Pressure",
+                        name : "Atmospheric pressure",
                         values : ["pressure"],
-                        units : "Pa",
+                        units : "hPa",
                         height: 23.5, #Percentage of the panel in the chart
                         offset: 2     #Offset of the panel in respect of the previous one
                     },
                     {
-                        name : "Humidity",
+                        name : "humidity",
                         values : ["humidity"],
                         units : "%",
                         height: 23.5, #Percentage of the panel in the chart
@@ -140,5 +141,6 @@ webserver:
 
     liveData:
         enable: yes
+        name: 'Live data'
         path: "default"
         updateEvery: {d: 0, h: 0, m: 1, s: 0}

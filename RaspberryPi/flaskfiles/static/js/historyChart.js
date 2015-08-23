@@ -7,6 +7,7 @@ $(document).ready(function() {
 	});
 
 	$.getJSON('http://' + document.domain + ':' + location.port + '/data/history.json', function (data) {
+
 		var entries = data['data']
 		for(var i = 0; i < entries.length; i++){
 			var timestamp = entries[i][0]

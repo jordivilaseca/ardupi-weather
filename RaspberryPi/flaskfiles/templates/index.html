@@ -1,134 +1,161 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
 
-    <title>My weather</title>
+  <title>{{ webpageTitle|string }}</title>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.png') }}">
 
-    <!-- Bootstrap Core CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <!-- Bootstrap Core CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
 
-    <!-- Latest compiled and minified JavaScript -->
-    
+  <!-- Latest compiled and minified JavaScript -->
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+        <![endif]-->
 
-    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
-  </head>
-  <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
-        <div class="container" style="margin-left: 0px;">
-            <!-- Brand and toggle get grouped for better mobile display -->
+  <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="http://code.highcharts.com/stock/highstock.js"></script>
+  <script src="http://code.highcharts.com/stock/highcharts-more.js"></script>
+  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="{{ url_for('static', filename='js/historyChart.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/dailyHistoryChart.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/live_data.js') }}"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+</head>
+      <body id="page-top" data-spy="scroll" data-target=".navbar" data-offset="50">
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+          <div class="container-fluid">
             <div class="navbar-header">
-                <a class="navbar-brand" href="#">My Weather</a>
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand page-scroll" href="#page-top"><img id="navbar-img" src="{{ url_for('static', filename='img/icon1.png')}}"></a>
             </div>
-            <!-- /.navbar-collapse -->
+          <!-- Brand and toggle get grouped for better mobile display
+          <div class="navbar-header">
+            <a class="navbar-brand" href="#"><img alt="Brand" src="{{ url_for('static', filename='img/icon1.png')}}"></a>
+          </div>
+          /.navbar-collapse -->
+
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+              {% if liveDataEnable %}
+              <li>
+                <a class="page-scroll" href="#livedata">{{ liveData['name']|string }}</a>
+              </li>
+              {% endif %}
+              {% if historyEnable %}
+              <li>
+                <a class="page-scroll" href="#chart1">{{ historyChart['name']|string }}</a>
+              </li>
+              {% endif %}
+              {% if dailyHistoryEnable %}
+              <li>
+                <a class="page-scroll" href="#chart2">{{ dailyHistoryChart['name']|string }}</a>
+              </li>
+              {% endif %}
+            </ul>
+          </div>
         </div>
         <!-- /.container -->
-    </nav>
+      </nav>
 
-    <div>
-      <img id="img_header" src= "{{ image_name }}" />
-    </div>
-    <div>
-      {% if numPills > 1 %}
-      <ul class="nav nav-pills nav-justified">
+      <header class="intro-header" style="background-image: url({{ url_for('static', filename=image_name) }})"></header>
+      <div>
         {% if liveDataEnable %}
-        <li class="active"><a data-toggle="pill" href="#livedata">Live Data</a></li>
-        {% endif %}
-        {% if historyEnable %}
-        <li><a data-toggle="pill" href="#chart1">History</a></li>
-        {% endif %}
-        {% if dailyHistoryEnable %}
-        <li><a data-toggle="pill" href="#chart2">Daily History</a></li>
-        {% endif %}
-      </ul>
-      <div class="tab-content">
-      {% endif %}
+        <div class="separator-small"></div>
 
-        {% if liveDataEnable %}
-          {% if numPills > 1 %}
-          <div class="tab-pane fade in active" id="livedata">
-          {% endif %}
-            <table id="currentDataTable" class="table">
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody>
-              {% for key, value in liveData.iteritems() %}
-                <tr>
-                  <td>{{ key|e }}</td>
-                  <td id="{{ key|e }}">{{ value|e }}</td>
-                </tr>
-              {% endfor %}
-              </tbody>
-            </table>
-          {% if numPills > 1 %}
+        <div id="livedata">
+          <!--<div class="tab-pane fade in active" id="livedata">-->
+          <div class="container">
+            <div class="col-lg-12 text-center table-responsive">
+              <h2 class="section-heading">{{ liveData['name']|string }}</h2>
+              <hr>
+              <table id="currentDataTable" class="table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for key, value in liveData['data'].iteritems() %}
+                  <tr>
+                    <td>{{ key|e }}</td>
+                    <td id="{{ key|e }}">{{ value|e }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
           </div>
-          {% endif %}
+        </div>
         {% endif %}
 
         {% if historyEnable %}
-          {% if numPills > 1 %}
-          <div class="tab-pane fade" id="chart1">
-          {% endif %}
-            <div id="{{ historyChart['chartID']|safe }}" class="chart" style="width: 95%; margin: 0 auto;"></div>
-          {% if numPills > 1 %}
+        <div class="separator-small"></div>
+
+        <div id="chart1">
+          <!-- <div class="tab-pane fade" id="chart1"> -->
+          <div class="container">
+            <div class="col-lg-12 text-center">
+              <h2 class="section-heading">{{ historyChart['name']|string }}</h2>
+              <hr>
+              <div id="{{ historyChart['chartID']|safe }}" class="chart" style="width: 95%; margin: 0 auto;"></div>
+            </div>
           </div>
-          {% endif %}
+        </div>
+        <!-- </div> -->
         {% endif %}
 
         {% if dailyHistoryEnable %}
-          {% if numPills > 1 %}
-          <div class="tab-pane fade" id="chart2">
-          {% endif %}
-            <div id="{{ dailyHistoryChart['chartID']|safe }}" class="chart" style="width: 95%; margin: 0 auto;"></div>
-          {% if numPills > 1 %}
-          </div>
-          {% endif %}
-        {% endif %}
+        <div class="separator-small"></div>
 
-      {% if numPills > 1 %}
-      </div>  
-      {% endif %}
-    </div>
+        <!-- <div class="tab-pane fade" id="chart2"> -->
+        <div id="chart2">
+            <div class="container">
+              <div class="col-lg-12 text-center">
+                <h2 class="section-heading">{{ dailyHistoryChart['name']|string }}</h2>
+                <hr>
+                <div id="{{ dailyHistoryChart['chartID']|safe }}" class="chart" style="width: 95%; margin: 0 auto;"></div>
+              </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="separator-big"></div>
+      </div>
     <script>
       var hChart_id = {{ historyChart['chartID']|safe }}
       var hHeight = {{ historyChart['height']|safe }}
-      var hYAxis = {{ historyChart['yAxis']|safe }}
-      var hChart_name = "{{ historyChart['chartName']|string }}"
+      var hYAxis = {{ historyChart['yAxis']|tojson }}
+      var hChart_name = "{{ historyChart['name']|string }}"
       var hSeries = {{ historyChart['series']|tojson }}
 
       var dhChart_id = {{ dailyHistoryChart['chartID']|safe }}
       var dhHeight = {{ dailyHistoryChart['height']|safe }}
-      var dhYAxis = {{ dailyHistoryChart['yAxis']|safe }}
-      var dhChart_name = "{{ dailyHistoryChart['chartName']|string }}"
+      var dhYAxis = {{ dailyHistoryChart['yAxis']|tojson }}
+      var dhChart_name = "{{ dailyHistoryChart['name']|string }}"
       var dhSeries = {{ dailyHistoryChart['series']|tojson }}
     </script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="http://code.highcharts.com/stock/highstock.js"></script>
-    <script src="http://code.highcharts.com/stock/highcharts-more.js"></script>
-    <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <script src="{{ url_for('static', filename='js/historyChart.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/dailyHistoryChart.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/live_data.js') }}"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
   </body>
-</html>
+  </html>

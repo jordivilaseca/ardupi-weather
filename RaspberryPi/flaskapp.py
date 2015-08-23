@@ -71,18 +71,21 @@ cm = chartManager()
 
 @app.route('/')
 def home():
-	liveData = readJsonData(dataPath + 'currentData.json')['data']
-	numPills = 0
+	liveData = {}
+	liveData['data'] = readJsonData(dataPath + 'currentData.json')['data']
+	liveData['name'] = cfg['webserver']['liveData']['name']
+
 	historyEnable = cfg['webserver']['charts']['history']['enable']
-	if historyEnable:
-		numPills += 1
 	dailyHistoryEnable = cfg['webserver']['charts']['dailyHistory']['enable']
-	if dailyHistoryEnable:
-		numPills += 1
 	liveDataEnable = cfg['webserver']['liveData']['enable']
-	if liveDataEnable:
-		numPills += 1
-	return render_template('index.html', image_name='static/img/header.jpg', historyChart=cm.getChart('history'), historyEnable = historyEnable, liveData = liveData, liveDataEnable = liveDataEnable, dailyHistoryChart = cm.getChart('dailyHistory'), dailyHistoryEnable = dailyHistoryEnable, numPills = numPills)
+
+	historyChart = cm.getChart('history')
+	dailyHistoryChart = cm.getChart('dailyHistory')
+
+	webpageTitle = cfg['webserver']['title']
+
+	image_name = 'css/background.JPG'
+	return render_template('index.html', image_name=image_name,webpageTitle=webpageTitle, historyChart= historyChart, historyEnable = historyEnable, liveData = liveData, liveDataEnable = liveDataEnable, dailyHistoryChart = dailyHistoryChart, dailyHistoryEnable = dailyHistoryEnable)
 
 @app.route('/log/<name>')
 def log(name):
