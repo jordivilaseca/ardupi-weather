@@ -5,31 +5,49 @@ body
   background-color: #fff;
 }
 
-.separator-small {
-  height: 10px;
-  background-color: #191919;
-}
-
-.separator-big {
+.separator-last {
   height: 50px;
-  background-color: #191919;
+  background-image: -webkit-linear-gradient(top, #222222 0%, #3c3c3c 100%);
+  background-image: -o-linear-gradient(top, #222222 0%, #3c3c3c 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#222222), to(#3c3c3c));
+  background-image: linear-gradient(to bottom, #222222 0%, #3c3c3c 100%);
+  border-top-right-radius: 20px;
+  border-top-left-radius: 20px;
 }
 
-.navbar-custom {
-  font-family: 'Open Sans','Helvetica Neue',Arial,sans-serif;
-  background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid transparent;
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin-left: 0;
-  width: 100%;
-  z-index: 3;
+hr.separator-top { 
+  height: 30px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  border-style: solid; 
+  border-color: #8c8b8b; 
+  border-width: 2px 0 0 0; 
+  border-radius: 20px; 
+} 
+hr.separator-bottom { 
+  display: block; 
+  content: ""; 
+  height: 30px; 
+  margin-top: 0px;
+  margin-bottom: 0px;
+  border-style: solid; 
+  border-color: #8c8b8b; 
+  border-width: 0 0 2px 0; 
+  border-radius: 20px; 
 }
-.navbar-custom .navbar-brand {
-  vertical-align: middle;
-  font-weight: 800;
-  color: white; 
+
+.section {
+  padding-top: 40px;
+  padding-bottom: 60px;
+}
+
+hr.underline {
+  border: 0; 
+  height: 2px; 
+  background-image: -webkit-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+  background-image: -moz-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+  background-image: -ms-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+  background-image: -o-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0); 
 }
 
 .intro-header {
@@ -40,6 +58,13 @@ body
   -moz-background-size: cover;
   background-size: cover;
   -o-background-size: cover;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+.custom-jumbotron {
+  background-color:transparent !important;
+  padding-top: 20px;
 }
 
 @media (min-width: 1920px) {

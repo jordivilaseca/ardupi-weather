@@ -38,124 +38,132 @@
   <script src="{{ url_for('static', filename='js/live_data.js') }}"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
 </head>
-      <body id="page-top" data-spy="scroll" data-target=".navbar" data-offset="50">
-        <!-- Navigation -->
-        <nav class="navbar navbar-inverse navbar-fixed-top">
-          <div class="container-fluid">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand page-scroll" href="#page-top"><img id="navbar-img" src="{{ url_for('static', filename='img/icon1.png')}}"></a>
-            </div>
-          <!-- Brand and toggle get grouped for better mobile display
-          <div class="navbar-header">
-            <a class="navbar-brand" href="#"><img alt="Brand" src="{{ url_for('static', filename='img/icon1.png')}}"></a>
-          </div>
-          /.navbar-collapse -->
 
-          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav">
-              {% if liveDataEnable %}
-              <li>
-                <a class="page-scroll" href="#livedata">{{ liveData['name']|string }}</a>
-              </li>
-              {% endif %}
-              {% if historyEnable %}
-              <li>
-                <a class="page-scroll" href="#chart1">{{ historyChart['name']|string }}</a>
-              </li>
-              {% endif %}
-              {% if dailyHistoryEnable %}
-              <li>
-                <a class="page-scroll" href="#chart2">{{ dailyHistoryChart['name']|string }}</a>
-              </li>
-              {% endif %}
-            </ul>
-          </div>
-        </div>
-        <!-- /.container -->
-      </nav>
-
-      <header class="intro-header" style="background-image: url({{ url_for('static', filename=image_name) }})"></header>
-      <div>
-        {% if liveDataEnable %}
-        <div class="separator-small"></div>
-
-        <div id="livedata">
-          <!--<div class="tab-pane fade in active" id="livedata">-->
-          <div class="container">
-            <div class="col-lg-12 text-center table-responsive">
-              <h2 class="section-heading">{{ liveData['name']|string }}</h2>
-              <hr>
-              <table id="currentDataTable" class="table">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for key, value in liveData['data'].iteritems() %}
-                  <tr>
-                    <td>{{ key|e }}</td>
-                    <td id="{{ key|e }}">{{ value|e }}</td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-        {% if historyEnable %}
-        <div class="separator-small"></div>
-
-        <div id="chart1">
-          <!-- <div class="tab-pane fade" id="chart1"> -->
-          <div class="container">
-            <div class="col-lg-12 text-center">
-              <h2 class="section-heading">{{ historyChart['name']|string }}</h2>
-              <hr>
-              <div id="{{ historyChart['chartID']|safe }}" class="chart" style="width: 95%; margin: 0 auto;"></div>
-            </div>
-          </div>
-        </div>
-        <!-- </div> -->
-        {% endif %}
-
-        {% if dailyHistoryEnable %}
-        <div class="separator-small"></div>
-
-        <!-- <div class="tab-pane fade" id="chart2"> -->
-        <div id="chart2">
-            <div class="container">
-              <div class="col-lg-12 text-center">
-                <h2 class="section-heading">{{ dailyHistoryChart['name']|string }}</h2>
-                <hr>
-                <div id="{{ dailyHistoryChart['chartID']|safe }}" class="chart" style="width: 95%; margin: 0 auto;"></div>
-              </div>
-            </div>
-        </div>
-        {% endif %}
-        <div class="separator-big"></div>
+<body id="page-top" data-spy="scroll" data-target=".navbar" data-offset="50">
+  <!-- Navigation -->
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand page-scroll" href="#page-top"><img id="navbar-img" src="{{ url_for('static', filename='img/icon.png')}}"></a>
       </div>
-    <script>
-      var hChart_id = {{ historyChart['chartID']|safe }}
-      var hHeight = {{ historyChart['height']|safe }}
-      var hYAxis = {{ historyChart['yAxis']|tojson }}
-      var hChart_name = "{{ historyChart['name']|string }}"
-      var hSeries = {{ historyChart['series']|tojson }}
 
-      var dhChart_id = {{ dailyHistoryChart['chartID']|safe }}
-      var dhHeight = {{ dailyHistoryChart['height']|safe }}
-      var dhYAxis = {{ dailyHistoryChart['yAxis']|tojson }}
-      var dhChart_name = "{{ dailyHistoryChart['name']|string }}"
-      var dhSeries = {{ dailyHistoryChart['series']|tojson }}
-    </script>
-  </body>
-  </html>
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          {% if liveDataEnable %}
+            <li>
+              <a class="page-scroll" href="#livedata">{{ liveData['name']|string }}</a>
+            </li>
+          {% endif %}
+          {% if historyEnable %}
+            <li>
+              <a class="page-scroll" href="#chart1">{{ historyChart['name']|string }}</a>
+            </li>
+          {% endif %}
+          {% if dailyHistoryEnable %}
+            <li>
+              <a class="page-scroll" href="#chart2">{{ dailyHistoryChart['name']|string }}</a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <header class="intro-header" style="background-image: url({{ url_for('static', filename=image_name) }})">
+    <a href="https://github.com/vilaseca11/weatherStation"><img style="position: absolute; top: 50; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+    <div class="jumbotron custom-jumbotron">
+      <div class="container">
+        <h1>{{ webpageTitle|string }}</h1>      
+        <p>{{ webpageSubtitle|string }}</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Live Data block -->
+  <div>
+    {% if liveDataEnable %}
+      <hr class="separator-top">
+      <div id="livedata" class="section">
+        <div class="container">
+          <div class="col-lg-12 table-responsive">
+            <h2 class="text-center">{{ liveData['name']|string }}</h2>
+            <hr class="underline">
+            <table id="currentDataTable" class="table">
+              <thead>
+                <tr>
+                  <th>{{ liveData['header']['type']|string }}</th>
+                  <th>{{ liveData['header']['value']|string }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for key, value in liveData['data'].iteritems() %}
+                  <tr>
+                    <td>{{ liveData['sensorNames'][key]|string }}</td>
+                    <td id="{{ key|string }}">{{ value|string }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <hr class="separator-bottom">
+    {% endif %}
+
+    <!-- History Chart block -->
+
+    {% if historyEnable %}
+      <hr class="separator-top">
+      <div id="chart1" class="section">
+        <div class="container">
+          <div class="col-lg-12 text-center">
+            <h2>{{ historyChart['name']|string }}</h2>
+            <hr class="underline">
+            <div id="{{ historyChart['chartID']|safe }}" class="chart"></div>
+          </div>
+        </div>
+      </div>
+      <hr class="separator-bottom">
+    {% endif %}
+
+    <!-- Daily History Chart block -->
+
+    {% if dailyHistoryEnable %}
+      <hr class="separator-top">
+      <div id="chart2" class="section">
+        <div class="container">
+          <div class="col-lg-12 text-center">
+            <h2>{{ dailyHistoryChart['name']|string }}</h2>
+            <hr class="underline">
+            <div id="{{ dailyHistoryChart['chartID']|safe }}" class="chart"></div>
+          </div>
+        </div>
+      </div>
+      <hr class="separator-bottom">
+    {% endif %}
+
+    <div class="separator-last"></div>
+
+  </div>
+
+  <script>
+    var hChart_id = {{ historyChart['chartID']|safe }}
+    var hHeight = {{ historyChart['height']|safe }}
+    var hYAxis = {{ historyChart['yAxis']|tojson }}
+    var hChart_name = "{{ historyChart['name']|string }}"
+    var hSeries = {{ historyChart['series']|tojson }}
+
+    var dhChart_id = {{ dailyHistoryChart['chartID']|safe }}
+    var dhHeight = {{ dailyHistoryChart['height']|safe }}
+    var dhYAxis = {{ dailyHistoryChart['yAxis']|tojson }}
+    var dhChart_name = "{{ dailyHistoryChart['name']|string }}"
+    var dhSeries = {{ dailyHistoryChart['series']|tojson }}
+  </script>
+</body>
+</html>

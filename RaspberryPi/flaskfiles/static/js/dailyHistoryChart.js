@@ -53,7 +53,6 @@ $(document).ready(function() {
 				selected: 0
 			},
 
-			title: {text: dhChart_name},
 			xAxis: {type: 'datetime'},
 			yAxis: dhYAxis,
 			series: dhSeries

@@ -74,6 +74,8 @@ def home():
 	liveData = {}
 	liveData['data'] = readJsonData(dataPath + 'currentData.json')['data']
 	liveData['name'] = cfg['webserver']['liveData']['name']
+	liveData['sensorNames'] = cfg['webserver']['names']['sensors']
+	liveData['header'] = {'type': cfg['webserver']['names']['type'], 'value': cfg['webserver']['names']['value']}
 
 	historyEnable = cfg['webserver']['charts']['history']['enable']
 	dailyHistoryEnable = cfg['webserver']['charts']['dailyHistory']['enable']
@@ -83,9 +85,10 @@ def home():
 	dailyHistoryChart = cm.getChart('dailyHistory')
 
 	webpageTitle = cfg['webserver']['title']
+	webpageSubtitle = cfg['webserver']['subtitle']
 
 	image_name = 'css/background.JPG'
-	return render_template('index.html', image_name=image_name,webpageTitle=webpageTitle, historyChart= historyChart, historyEnable = historyEnable, liveData = liveData, liveDataEnable = liveDataEnable, dailyHistoryChart = dailyHistoryChart, dailyHistoryEnable = dailyHistoryEnable)
+	return render_template('index.html', image_name=image_name, webpageTitle=webpageTitle, webpageSubtitle = webpageSubtitle, historyChart= historyChart, historyEnable = historyEnable, liveData = liveData, liveDataEnable = liveDataEnable, dailyHistoryChart = dailyHistoryChart, dailyHistoryEnable = dailyHistoryEnable)
 
 @app.route('/log/<name>')
 def log(name):

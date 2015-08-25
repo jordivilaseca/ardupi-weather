@@ -64,7 +64,6 @@ $(document).ready(function() {
 				selected: 1
 			},
 
-			title: {text: hChart_name},
 			xAxis: {categories: ['Time']},
 			yAxis: hYAxis,
 			series: hSeries

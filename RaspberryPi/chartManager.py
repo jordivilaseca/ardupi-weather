@@ -9,6 +9,7 @@ def readJsonData(filePath):
 def createHistoryChart():
 	chartCFG = cfg['webserver']['charts']['history']
 	colors = cfg['webserver']['charts']['colors']
+	names = cfg['webserver']['names']['sensors']
 	rawData = readJsonData(dataPath + 'history.json')
 	chart = {}
 	series = []
@@ -20,7 +21,7 @@ def createHistoryChart():
 	for panel in chartCFG['panels']:
 		for value in panel['values']:
 			tooltip = {'valueSuffix' : panel['units']}
-			series.append({'type':panel['type'],'name':value,'data': [], 'yAxis': axisNum, 'tooltip' : tooltip ,'connectNulls': 'true', 'color':colors[i]})
+			series.append({'type':panel['type'],'name':names[value],'data': [], 'yAxis': axisNum, 'tooltip' : tooltip ,'connectNulls': 'true', 'color':colors[i]})
 			i += 1
 		currYAxis = {}
 		currYAxis['title'] = {'text': panel['name']}
@@ -46,6 +47,9 @@ def createHistoryChart():
 def createDailyHistoryChart():
 	chartCFG = cfg['webserver']['charts']['dailyHistory']
 	colors = cfg['webserver']['charts']['colors']
+	names = cfg['webserver']['names']['sensors']
+	avgName = cfg['webserver']['names']['average']
+	rangeName = cfg['webserver']['names']['range']
 	rawData = readJsonData(dataPath + 'dailyHistory.json')
 	chart = {}
 	series = []
@@ -57,10 +61,10 @@ def createDailyHistoryChart():
 		tooltip = {'valueSuffix' : panel['units']}
 		for value in panel['values']:
 			if chartCFG['showAVG']:
-				series.append({'type': 'spline', 'name':value + ' AVG', 'yAxis': axisNum, 'tooltip': tooltip,'connectNulls': 'true', 'data': [], 'zIndex': 1, 'color': colors[i], 'minTickInterval': 24 * 3600 * 1000})
+				series.append({'type': 'spline', 'name':names[value] + ' ' + avgName, 'yAxis': axisNum, 'tooltip': tooltip,'connectNulls': 'true', 'data': [], 'zIndex': 1, 'color': colors[i], 'minTickInterval': 24 * 3600 * 1000})
 
 			if chartCFG['showMINMAX']:
-				series.append({'type' : 'areasplinerange', 'name' : value + ' range', 'yAxis': axisNum, 'tooltip' : tooltip, 'connectNulls' : 'true', 'data' : [], 'zIndex': 0, 'lineWidth': 0, 'linkedTo': ':previous', 'fillOpacity': 0.3, 'color': colors[i], 'minTickInterval': 24 * 3600 * 1000})
+				series.append({'type' : 'areasplinerange', 'name' : names[value] + ' ' + rangeName, 'yAxis': axisNum, 'tooltip' : tooltip, 'connectNulls' : 'true', 'data' : [], 'zIndex': 0, 'lineWidth': 0, 'linkedTo': ':previous', 'fillOpacity': 0.3, 'color': colors[i], 'minTickInterval': 24 * 3600 * 1000})
 			i += 1
 		currYAxis = {}
 		currYAxis['title'] = {'text': panel['name']}

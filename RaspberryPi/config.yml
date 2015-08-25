@@ -57,6 +57,20 @@ webserver:
     host: '0.0.0.0'
     port: 5000
     title: 'My weather'
+    subtitle: ""
+    names:
+        sensors:
+            {
+                temperature : Temperature,
+                pressure    : Atmospheric pressure,
+                humidity    : Humidity,
+                heatIndex   : Heat index,
+                lux         : Illuminance
+            }
+        average: average
+        range: range
+        type: Type
+        value: Value
     updateOffset: 5 # Time in seconds, it is the offset between new recordings and live web updates
     charts:
         colors: ['#2f7ed8', '#0d233a', '#8bbc21', '#910000', '#1aadce', '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a']
@@ -71,33 +85,33 @@ webserver:
                         type : "spline",
                         values : ["temperature","heatIndex"],
                         units : "ºC",
-                        height: 23.5, #Percentage of the panel in the chart
-                        offset: 0     #Offset of the panel in respect of the previous one
+                        height: 23, #Percentage of the panel in the chart
+                        offset: 2   #Offset of the panel in respect of the next one
                     },
                     {
                         name : "Atmospheric pressure",
                         type : "spline",
                         values : ["pressure"],
                         units : "hPa",
-                        height: 23.5, #Percentage of the panel in the chart
-                        offset: 2     #Offset of the panel in respect of the previous one
+                        height: 23, #Percentage of the panel in the chart
+                        offset: 2   #Offset of the panel in respect of the next one
                     },
                     {
                         name : "Humidity",
                         type : "spline",
                         values : ["humidity"],
                         units : "%",
-                        height: 23.5, #Percentage of the panel in the chart
-                        offset: 2     #Offset of the panel in respect of the previous one
+                        height: 23, #Percentage of the panel in the chart
+                        offset: 2   #Offset of the panel in respect of the next one
                     },
                     {
                         name : "Illuminance",
                         type : "spline",
                         values : ["lux"],
                         units : "Lux",
-                        height: 23.5, #Percentage of the panel in the chart
-                        offset: 2,    #Offset of the panel in respect of the previous one
-                        min: 0        #Minimum value for the Y Axis.
+                        height: 23, #Percentage of the panel in the chart
+                        offset: 2,  #Offset of the panel in respect of the next one
+                        min: 0      #Minimum value for the Y Axis.
                     }
                 ]
         dailyHistory:
@@ -112,30 +126,30 @@ webserver:
                         name : "Temperature",
                         values : ["temperature","heatIndex"],
                         units : "ºC",
-                        height: 23.5, #Percentage of the panel in the chart
-                        offset: 0     #Offset of the panel in respect of the previous one
+                        height: 23, #Percentage of the panel in the chart
+                        offset: 2   #Offset of the panel in respect of the next one
                     },
                     {
                         name : "Atmospheric pressure",
                         values : ["pressure"],
                         units : "hPa",
-                        height: 23.5, #Percentage of the panel in the chart
-                        offset: 2     #Offset of the panel in respect of the previous one
+                        height: 23, #Percentage of the panel in the chart
+                        offset: 2   #Offset of the panel in respect of the next one
                     },
                     {
                         name : "humidity",
                         values : ["humidity"],
                         units : "%",
-                        height: 23.5, #Percentage of the panel in the chart
-                        offset: 2     #Offset of the panel in respect of the previous one
+                        height: 23, #Percentage of the panel in the chart
+                        offset: 2   #Offset of the panel in respect of the next one
                     },
                     {
                         name : "Illuminance",
                         values : ["lux"],
                         units : "Lux",
-                        height: 23.5, #Percentage of the panel in the chart
-                        offset: 2,    #Offset of the panel in respect of the previous one
-                        min: 0        #Minimum value for the Y Axis.
+                        height: 23, #Percentage of the panel in the chart
+                        offset: 2,  #Offset of the panel in respect of the next one
+                        min: 0      #Minimum value for the Y Axis.
                     }
                 ]
 
