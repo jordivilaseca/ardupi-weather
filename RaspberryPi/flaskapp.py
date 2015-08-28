@@ -6,18 +6,25 @@ import time
 import datetime
 from threading import Thread, Event
 from chartManager import chartManager
-from config import cfg, templatesFlaskPath, staticFlaskPath, dataPath, logPath
+from config import cfg, TEMPLATES_FLASK_PATH, STATIC_FLASK_PATH, DATA_PATH, LOG_PATH
 from flask.ext.socketio import SocketIO, emit
 from alarm import alarm
+from WebserverDataUpdater import WebserverDataUpdater
+
 import logging
+
 
 logging.basicConfig(level=logging.INFO)
 
-app = Flask(__name__,static_folder=staticFlaskPath,template_folder=templatesFlaskPath)
+app = Flask(__name__,static_folder=STATIC_FLASK_PATH,template_folder=TEMPLATES_FLASK_PATH)
 socketio = SocketIO(app)
-thread = Thread()
+
+socketThread = Thread()
 thread_stop_event = Event()
 connectedClients = 0
+
+WDUthread = WebserverDataUpdater()
+WDUthread.start()
 
 def readJsonData(filePath):
 	with open(filePath, 'r') as jsonFile:
@@ -26,7 +33,7 @@ def readJsonData(filePath):
 
 def sendHistoryData():
 	global alarms
-	data = readJsonData(dataPath + 'history.json')
+	data = readJsonData(DATA_PATH + 'history.json')
 	socketio.emit('historyUpdate',data['data'][-1],namespace='/test')
 
 	offset = cfg['webserver']['updateOffset']
@@ -35,7 +42,7 @@ def sendHistoryData():
 
 def sendCurrentData():
 	global alarms
-	data = readJsonData(dataPath + 'currentData.json')
+	data = readJsonData(DATA_PATH + 'currentData.json')
 	socketio.emit('currentDataUpdate',data['data'],namespace='/test')
 
 	offset = cfg['webserver']['updateOffset']
@@ -50,12 +57,12 @@ def liveUpdatesThread():
 	offset = cfg['webserver']['updateOffset']
 
 	if cfg['webserver']['charts']['history']['enable']:
-		nextUpdateStr = readJsonData(dataPath + 'history.json')['nextUpdate']
+		nextUpdateStr = readJsonData(DATA_PATH + 'history.json')['nextUpdate']
 		nextUpdate = datetime.datetime.strptime(nextUpdateStr, "%Y-%m-%d %H:%M:%S.%f")
 		alarms.addOneTime('sendHistoryData', sendHistoryData, nextUpdate + datetime.timedelta(seconds=offset))
 
 	if cfg['webserver']['liveData']['enable']:
-		nextUpdateStr = readJsonData(dataPath + 'currentData.json')['nextUpdate']
+		nextUpdateStr = readJsonData(DATA_PATH + 'currentData.json')['nextUpdate']
 		nextUpdate = datetime.datetime.strptime(nextUpdateStr, "%Y-%m-%d %H:%M:%S.%f")
 		alarms.addOneTime('sendCurrentData', sendCurrentData, nextUpdate + datetime.timedelta(seconds=offset))
 	
@@ -72,7 +79,7 @@ cm = chartManager()
 @app.route('/')
 def home():
 	liveData = {}
-	liveData['data'] = readJsonData(dataPath + 'currentData.json')['data']
+	liveData['data'] = readJsonData(DATA_PATH + 'currentData.json')['data']
 	liveData['name'] = cfg['webserver']['liveData']['name']
 	liveData['sensorNames'] = cfg['webserver']['names']['sensors']
 	liveData['header'] = {'type': cfg['webserver']['names']['type'], 'value': cfg['webserver']['names']['value']}
@@ -92,7 +99,7 @@ def home():
 
 @app.route('/log/<name>')
 def log(name):
-	filePath = safe_join(logPath, name)
+	filePath = safe_join(LOG_PATH, name)
 	if os.path.isfile(filePath):
 		with open(filePath, 'r') as f:
 			data = f.read()
@@ -102,7 +109,7 @@ def log(name):
 
 @app.route('/data/<name>.json')
 def data(name):
-	filePath = safe_join(dataPath, name + '.json')
+	filePath = safe_join(DATA_PATH, name + '.json')
 	if os.path.isfile(filePath):
 		with open(filePath, 'r') as f:
 			data = f.read()
@@ -112,20 +119,20 @@ def data(name):
 @app.route('/database')
 def send_database():
 	if cfg['data']['usedDB'] == 'sqlite':
-		return send_from_directory(dataPath, cfg['data']['name'])
+		return send_from_directory(DATA_PATH, cfg['data']['name'])
 	else:
 		return ""
 
 @socketio.on('connect', namespace='/test')
 def connect():
-	global thread
+	global socketThread
 	global connectedClients
 	connectedClients += 1
 
-	if not thread.isAlive():
+	if not socketThread.isAlive():
 		thread_stop_event.clear()
-		thread = Thread(target=liveUpdatesThread,name='flaskapp.py: SocketIO thread')
-		thread.start()
+		socketThread = Thread(target=liveUpdatesThread,name='flaskapp.py: SocketIO thread')
+		socketThread.start()
 
 @socketio.on('disconnect', namespace='/test')
 def disconnect():
@@ -136,6 +143,5 @@ def disconnect():
 		thread_stop_event.set()
  
 if __name__ == '__main__':
-	app.debug = True
 	socketio.run(app, host=cfg['webserver']['host'],port=cfg['webserver']['port'])
 

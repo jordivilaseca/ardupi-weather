@@ -20,17 +20,31 @@ class sqlitedb:
 		self.cursor.execute(sentence,tuple (values))
 		self.conn.commit()
 
+	def update(self, tableName, header, values, conditionKey, conditionValue):
+		sentence = "UPDATE " + tableName + " SET " + ", ".join("{!s}=?".format(key) for key in header) + " WHERE " + conditionKey + " == " + "'" + conditionValue + "'"
+		self.cursor.execute(sentence, tuple(values))
+		self.conn.commit()
+
 	def queryBetweenValues(self, tableName, attribute, minValue, maxValue):
 		sentence = "SELECT * FROM " + tableName + " WHERE " + attribute + " BETWEEN '" + minValue + "' AND '" + maxValue + "'"
 		query = self.conn.execute(sentence)
 		colname = [ d[0] for d in query.description ]
 		return [ dict(zip(colname, r)) for r in query.fetchall() ]
 
+	def queryOne(self, queryCols, tableName, conditionKey, conditionValue):
+		sentence = "SELECT (" + ", ".join(queryCols) + ") FROM " + tableName + " WHERE " + conditionKey + "=='" + conditionValue +"'"
+		query = self.conn.execute(sentence)
+		return query.fetchone()
+
 	def queryAll(self, tableName):
 		sentence = "SELECT * FROM " + tableName
 		query = self.conn.execute(sentence)
 		colname = [ d[0] for d in query.description ]
 		return [dict(zip(colname, r)) for r in query.fetchall()]
+
+	def deleteALL(self, tableName):
+		sentence = "DELETE FROM " + tableName
+		self.cursor.execute(sentence)
 
 	def close():
 		self.conn.close()

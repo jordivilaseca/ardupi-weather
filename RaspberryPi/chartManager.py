@@ -1,4 +1,4 @@
-from config import cfg, dataPath
+from config import cfg, DATA_PATH
 import json
 
 def readJsonData(filePath):
@@ -10,7 +10,7 @@ def createHistoryChart():
 	chartCFG = cfg['webserver']['charts']['history']
 	colors = cfg['webserver']['charts']['colors']
 	names = cfg['webserver']['names']['sensors']
-	rawData = readJsonData(dataPath + 'history.json')
+	rawData = readJsonData(DATA_PATH + 'history.json')
 	chart = {}
 	series = []
 	yAxis = []
@@ -50,7 +50,7 @@ def createDailyHistoryChart():
 	names = cfg['webserver']['names']['sensors']
 	avgName = cfg['webserver']['names']['average']
 	rangeName = cfg['webserver']['names']['range']
-	rawData = readJsonData(dataPath + 'dailyHistory.json')
+	rawData = readJsonData(DATA_PATH + 'dailyHistory.json')
 	chart = {}
 	series = []
 	yAxis = []

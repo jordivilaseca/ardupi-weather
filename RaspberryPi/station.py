@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from config import cfg, dataPath, logPath
+from config import cfg, DATA_PATH, LOG_PATH
 from arduino.arduino import arduino
 from database import databaseController
 import os
@@ -12,50 +12,20 @@ from logging.handlers import TimedRotatingFileHandler
 import time
 import json
 
-LOG_FILE = logPath + 'station.log'
+LOG_FILE = LOG_PATH + 'station.log'
 handler = TimedRotatingFileHandler(LOG_FILE, when="midnight", backupCount=6)
 handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s : %(message)s'))
 
 logger = logging.getLogger('station')
 logger.setLevel(logging.INFO)
-
 logger.addHandler(handler)
 
 
 def getDatetime():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
-def getDate():
-    return datetime.datetime.now().strftime("%Y-%m-%d")
-
 def formatDatetime(date):
     return date.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-
-def jsonTimestamp(stringTime, isDate):
-    if isDate:
-        return time.mktime(datetime.datetime.strptime(stringTime, '%Y-%m-%d').timetuple())*1000
-    else:
-        return time.mktime(datetime.datetime.strptime(stringTime, '%Y-%m-%d %H:%M:%S.%f').timetuple())*1000
-
-def updateJsonFile(jsonFilePath, dataHeader, newValues, nextUpdate, isDate = False):
-    # Read data
-    with open(jsonFilePath, 'r') as jsonFile:
-        data = json.load(jsonFile)
-
-    # Update data dictionary
-    newValuesList = [newValues[key] for key in dataHeader]
-    data['data'].append([jsonTimestamp(newValues['date'], isDate),newValuesList])
-
-    # set new update time
-    data['nextUpdate'] = nextUpdate
-
-    # Update file
-    with open(jsonFilePath, 'w') as jsonFile:
-        json.dump(data, jsonFile)
-
-def createFile(filePath, initData):
-    with open(filePath, 'w+') as jsonFile:
-        jsonFile.write(initData)
 
 def printSensor(sensor, value):
     date = getDatetime()
@@ -81,6 +51,13 @@ class station:
         dataCfg = cfg['data']
         self.configureDatabase(dataCfg)
 
+        #Initialize next updates database
+        self.initializeNextUpdates()
+
+        #Initialize current data database
+        currentDataCfg = dataCfg['currentData']
+        self.initialitzeCurrentData(currentDataCfg)
+
         #Initialize history database
         historyCfg = dataCfg['history']
         self.initialitzeHistoryDatabase(historyCfg)
@@ -96,10 +73,6 @@ class station:
         #Initialize terminal input
         self.t = terminal()
 
-    def parseDatabase(self, containerName, dataHeader, isDate = False):
-        rawData = self.dbc.queryAll(containerName)
-        return [[jsonTimestamp(entry['date'], isDate), [entry[key] for key in dataHeader]] for entry in rawData]
-
     #Configuration functions
 
     def configureArduino(self, ard):
@@ -107,16 +80,45 @@ class station:
         self.ard = arduino(connection, ard[connection], self.sensorUnits)
 
     def configureDatabase(self, data):
-        self.databaseName = data['name']
+        databaseName = data['name']
 
         usedDatabase = data['usedDB']
         db = data[usedDatabase]
         if usedDatabase == 'sqlite':
-            self.dbc.enableSqlite(db['path'] + self.databaseName)
+            self.dbc.enableSqlite(db['path'] + databaseName)
         elif usedDatabase == 'mongo':
-            self.dbc.enableMongo(self.databaseName, db['server'], db['port'])
+            self.dbc.enableMongo(databaseName, db['server'], db['port'])
         else:
             'Unknown database name'
+
+    def initializeNextUpdates(self):
+        self.dbc.createContainer('nextUpdates', {'name':'TEXT','nextUpdate':'TEXT'})
+        self.dbc.deleteALL('nextUpdates')
+
+    def initialitzeCurrentData(self, currentData):
+        if currentData['enable']:
+            self.currentDataDatabaseName = currentData['name']
+            self.dbCurrentDataHeader = {'type':'TEXT', 'value': 'TEXT'}
+
+            self.currentDataValues = {}
+
+            self.dbc.createContainer(self.currentDataDatabaseName, self.dbCurrentDataHeader)
+
+            # Remove all data from previous initializations
+            self.dbc.deleteALL(self.currentDataDatabaseName)
+
+            # Initialize current data database
+            for key in self.sensorTypes.keys():
+                self.dbc.insert(self.currentDataDatabaseName, {'type':key, 'value':None})
+
+            # Add update current data alarm
+            update = currentData['updateEvery']
+            self.alarms.add('updateCurrentData', self.updateCurrentDataDatabase, update['d'], update['h'], update['m'], update['s'])
+
+            # Insert next update to database
+            self.dbc.insert('nextUpdates', {'name':'currentData','nextUpdate': self.alarms.getNextUpdateStr('updateCurrentData')})
+
+            self.newValueFunctions.append(self.updateCurrentData)
 
     def initialitzeHistoryDatabase(self, history):
         if history['enable']:
@@ -124,12 +126,15 @@ class station:
             self.dbHistoryHeader.update(self.sensorTypes)
 
             self.historyDataName = history['name']
-            self.dbc.createDataContainer(self.historyDataName, self.dbHistoryHeader)
+            self.dbc.createContainer(self.historyDataName, self.dbHistoryHeader)
+
             self.sensorSum = dict.fromkeys(self.sensorTypes, 0)
             self.sensorNum = dict.fromkeys(self.sensorTypes, 0)
 
             update = history['updateEvery']
-            self.alarms.add('updateHistory', self.updateHistory, update['d'], update['h'], update['m'], update['s'])
+            self.alarms.add('updateHistory', self.updateHistoryDatabase, update['d'], update['h'], update['m'], update['s'])
+
+            self.dbc.insert('nextUpdates', {'name':'history','nextUpdate': self.alarms.getNextUpdateStr('updateHistory')})
 
             self.newValueFunctions.append(self.updateHistoryData)
 
@@ -145,71 +150,17 @@ class station:
             self.dbDailyHistoryHeader.update({key + 'AVG': value for key,value in self.sensorTypes.items()})
 
             self.dailyHistoryDataName = daily['name']
-            self.dbc.createDataContainer(self.dailyHistoryDataName, self.dbDailyHistoryHeader)
+            self.dbc.createContainer(self.dailyHistoryDataName, self.dbDailyHistoryHeader)
 
-            self.alarms.addDaily('updateDailyHistory', self.updateDailyHistory)
+            self.alarms.addDaily('updateDailyHistory', self.updateDailyHistoryDatabase)
 
-    def initialitzeCurrentData(self, currentData):
-        if currentData['enable']:
-            self.currentDataFile = currentData['path'] + "currentData.json"
-
-            self.currentDataValues = {}
-
-            update = currentData['updateEvery']
-            self.alarms.add('updateCurrentData', self.updateCurrentDataFile, update['d'], update['h'], update['m'], update['s'])
-
-            self.newValueFunctions.append(self.updateCurrentData)
-
-            # check if the file exists, in case it does not exists we create it
-            initData = '{ "data" : {}, "nextUpdate" : "' + self.alarms.getNextUpdateStr('updateCurrentData') + '"}'
-            with open(self.currentDataFile, 'w+') as jsonFile:
-                jsonFile.write(initData)
+            self.dbc.insert('nextUpdates', {'name':'dailyHistory','nextUpdate': self.alarms.getNextUpdateStr('updateDailyHistory')})
 
     def configureWebserverSupport(self, webserver, history, dailyHistory):
         if webserver['enable']:
             if not (history['enable'] and dailyHistory['enable']):
                 print("webserver cannot be enabled because 'history' or 'dailyHistory' are not enabled")
                 return
-
-            self.configureWebserverCharts(webserver['charts'])
-            self.initialitzeCurrentData(webserver['liveData'])
-
-    def configureWebserverCharts(self, charts):
-
-        # Initialize history chart structures
-        historyChart = charts['history']
-        if historyChart['enable']:
-            self.historyJsonFilePath = dataPath + 'history.json'
-
-            self.historyJsonDataHeader = []
-            for panel in historyChart['panels']:
-                self.historyJsonDataHeader.extend(list(panel['values']))
-            self.historyJson = True
-
-            # dump data from database to a json file
-            data = self.parseDatabase(self.historyDataName, self.historyJsonDataHeader)
-            initData = { "data" : data, "nextUpdate" : self.alarms.getNextUpdateStr('updateHistory')}
-            with open(self.historyJsonFilePath, 'w+') as jsonFile:
-                jsonFile.write(json.dumps(initData))
-        else:
-            self.historyJson = False
-
-        dailyHistoryChart = charts['dailyHistory']
-        if dailyHistoryChart['enable']:
-            self.dailyHistoryJsonFilePath = dataPath + 'dailyHistory.json'
-
-            self.dailyHistoryJsonDataHeader = []
-            for data in self.historyJsonDataHeader:
-                self.dailyHistoryJsonDataHeader.extend([data + 'MIN', data + 'MAX', data + 'AVG'])
-            self.dailyHistoryJson = True
-
-            # dump data from database to a json file
-            data = self.parseDatabase(self.dailyHistoryDataName, self.dailyHistoryJsonDataHeader, True)
-            initData = { "data" : data, "nextUpdate" : self.alarms.getNextUpdateStr('updateDailyHistory'), "showAVG": dailyHistoryChart['showAVG'], "showMINMAX": dailyHistoryChart['showMINMAX']}
-            with open(self.dailyHistoryJsonFilePath, 'w+') as jsonFile:
-                jsonFile.write(json.dumps(initData))
-        else:
-            self.dailyHistoryJson = False
 
     #Functions to execute when a new sensor value arrives
     def updateCurrentData(self, valueType, value):
@@ -221,14 +172,17 @@ class station:
 
     #Functions to execute at a determined time  
 
-    def updateCurrentDataFile(self):
-        data = {"nextUpdate" : self.alarms.getNextUpdateStr('updateCurrentData'), "data": self.currentDataValues}
-        with open(self.currentDataFile, 'w+') as f:
-            json.dump(data, f)
+    def updateCurrentDataDatabase(self):
+        for (key,value) in self.currentDataValues.items():
+            self.dbc.update(self.currentDataDatabaseName,{"value":value}, "type", key)
+
+        # Change next update time
+        nextUpdate = self.alarms.getNextUpdateStr('updateCurrentData')
+        self.dbc.update("nextUpdates", {"nextUpdate":nextUpdate}, "name", "currentData")
 
         print('Updated current data file')
 
-    def updateHistory(self):
+    def updateHistoryDatabase(self):
         newValues = {'date' : getDatetime()}
         nullKeys = []
         for elem in self.sensorSum.keys():
@@ -244,19 +198,19 @@ class station:
         logger.info('-History update- %s', ', '.join("%s:%i" % (k,v) for k,v in self.sensorNum.items()))
 
         # Update database
-        self.dbc.insertDataEntry(self.historyDataName, newValues)
+        self.dbc.insert(self.historyDataName, newValues)
 
-        # Update json file
-        if self.historyJson:
-            nextUpdate = self.alarms.getNextUpdateStr('updateHistory')
-            updateJsonFile(self.historyJsonFilePath, self.historyJsonDataHeader, newValues, nextUpdate)
+        # Change next update time
+        nextUpdate = self.alarms.getNextUpdateStr('updateHistory')
+        self.dbc.update("nextUpdates", {"nextUpdate":nextUpdate}, "name", "history")
+
         print('Inserted data to history')
 
         # Reset data
         self.sensorSum = dict.fromkeys(self.sensorSum, 0)
         self.sensorNum = dict.fromkeys(self.sensorNum, 0)
 
-    def updateDailyHistory(self):
+    def updateDailyHistoryDatabase(self):
         # Query to database
         lastDay = datetime.date.today() - datetime.timedelta(days=1)
         minVal = datetime.datetime.combine(lastDay, datetime.datetime.min.time())
@@ -294,12 +248,12 @@ class station:
                 dailyData[key + 'MIN'] = None
                 dailyData[key + 'MAX'] = None
 
-        self.dbc.insertDataEntry(self.dailyHistoryDataName, dailyData)
+        self.dbc.insert(self.dailyHistoryDataName, dailyData)
 
-        # Update json file
-        if self.dailyHistoryJson:
-            nextUpdate = self.alarms.getNextUpdateStr('updateDailyHistory')
-            updateJsonFile(self.dailyHistoryJsonFilePath, self.dailyHistoryJsonDataHeader, dailyData, nextUpdate, True)
+        # Change next update time
+        nextUpdate = self.alarms.getNextUpdateStr('updateDailyHistory')
+        self.dbc.update("nextUpdates", {"nextUpdate":nextUpdate}, "name", "dailyHistory")
+
         print('Inserted data to daily history')
 
     def run(self):

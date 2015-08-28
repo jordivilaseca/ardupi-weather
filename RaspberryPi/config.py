@@ -1,15 +1,16 @@
 import yaml
+import codecs
 import os
 
-appPath = os.path.dirname(os.path.realpath(__file__)) + '/'
-flaskPath = appPath + 'flaskfiles/'
-staticFlaskPath = flaskPath + 'static'
-templatesFlaskPath = flaskPath + 'templates'
-dataPath = appPath + 'data/'
-logPath = appPath + 'log/'
+APP_PATH = os.path.dirname(os.path.realpath(__file__)) + '/'
+FLASK_PATH = APP_PATH + 'flaskfiles/'
+STATIC_FLASK_PATH = FLASK_PATH + 'static'
+TEMPLATES_FLASK_PATH = FLASK_PATH + 'templates'
+DATA_PATH = APP_PATH + 'data/'
+LOG_PATH = APP_PATH + 'log/'
 
 def getPath(path):
-	return dataPath if path == 'default' else path
+	return DATA_PATH if path == 'default' else path
 
 def setPath(cfg):
 	nCfg = None
@@ -28,7 +29,7 @@ def setPath(cfg):
 		nCfg = cfg
 	return nCfg
 
-with open("config.yml", 'r') as ymlfile:
+with codecs.open("config.yml", 'r', encoding='utf-8') as ymlfile:
 	cfg = yaml.load(ymlfile)
 
 cfg = setPath(cfg)

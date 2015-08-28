@@ -9,7 +9,6 @@ class mongodb:
 
 		try:
 			self.client=pymongo.MongoClient(server,port)
-			print ("Connected successfully!!!")
 		except pymongo.errors.ConnectionFailure as e:
 			print ("Could not connect to MongoDB: %s" % e)
 
@@ -20,9 +19,17 @@ class mongodb:
 		coll = self.getCollection(dbCollection)
 		coll.insert(dic)
 
-	def queryOne(self, dbCollection, queryDic=None):
+	def update(self, dbCollection, dic, conditionKey, conditionValue):
 		coll = self.getCollection(dbCollection)
-		return list(coll.find_one(queryDic))
+		coll.update({conditionKey: conditionValue}, {'$set': dic}, False)
+
+	def queryOne(self, queryCols, dbCollection, conditionKey, conditionValue):
+		coll = self.getCollection(dbCollection)
+
+		queryFields = {key: True for key in queryCols}
+		queryFields['_id'] = False
+
+		return coll.find_one({conditionKey:conditionValue}, queryFields)
 
 	def query(self, dbCollection, queryDic=None):
 		coll = self.getCollection(dbCollection)
@@ -30,12 +37,16 @@ class mongodb:
 
 	def queryAll(self, dbCollection):
 		coll = self.getCollection(dbCollection)
-		return list(coll.find())
+		return list(coll.find(None, {'_id': False}))
 
 	def queryBetweenValues(self, dbCollection, attribute, minValue, maxValue):
 		coll = self.getCollection(dbCollection)
-		return list(coll.find({attribute: {"$gte": minValue, "$lte": maxValue}}))
+		return list(coll.find({attribute: {"$gte": minValue, "$lte": maxValue}}, {'_id': False}))
 
 	def queryBetweenValuesSortAsc(self, dbCollection, attribute, minValue, maxValue):
 		coll = self.getCollection(dbCollection)
 		return list(coll.find({attribute: {"$gte": minValue, "$lte": maxValue}}).sort([(attribute, pymongo.ASCENDING)]))
+
+	def deleteALL(self, dbCollection):
+		coll = self.getCollection(dbCollection)
+		coll.remove()
