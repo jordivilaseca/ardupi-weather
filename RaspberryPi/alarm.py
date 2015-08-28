@@ -4,10 +4,10 @@ from datetime import time
 import time
 
 def getCurrentDate():
-	return datetime.now().date()
+	return datetime.utcnow().date()
 
 def getCurrentTime():
-	return datetime.now()
+	return datetime.utcnow()
 
 class alarm:
 
