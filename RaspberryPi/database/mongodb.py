@@ -2,13 +2,14 @@ import pymongo
 
 
 class mongodb:
-	def __init__(self, server, port, dbName):
+	def __init__(self, server, port, dbName, user, password):
 		self.server = server
 		self.port = port
 		self.dbName = dbName
 
 		try:
-			self.client=pymongo.MongoClient(server,port)
+			sentence = "mongodb://" + user + ":" + password + "@" + server + ":" + port + "/"
+			self.client=pymongo.MongoClient(sentence)
 		except pymongo.errors.ConnectionFailure as e:
 			print ("Could not connect to MongoDB: %s" % e)
 

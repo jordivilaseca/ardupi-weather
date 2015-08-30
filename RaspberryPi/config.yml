@@ -23,7 +23,7 @@ arduino:
         repetitions: 15         # Maximum number of repetitions 15
 
 data:
-    name : 'weatherStation'
+    name : 'temps'
     values :
         {
             temperature : "FLOAT",
@@ -33,9 +33,9 @@ data:
             lux         : "INTEGER"
         }
 
-    usedDB: "sqlite"
+    usedDB: "mongo"
     sqlite: {path : "default"}
-    mongo : {server: "localhost", port : 27017}
+    mongo : {server: "127.0.0.1", port : "27017", user: '', password: ''}
 
     history:
         enable: yes
