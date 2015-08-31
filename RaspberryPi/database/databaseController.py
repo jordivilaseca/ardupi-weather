@@ -8,10 +8,10 @@ class databaseController:
 		self.db = sqlitedb.sqlitedb(path)
 		self.type = 'sqlite'
 
-	def enableMongo(self, dbName, server='localhost',port=27017, user= None, password = None):
+	def enableMongo(self, dbName, uri, dataPath, logPath):
 		from database import mongodb
 		
-		self.db = mongodb.mongodb(server, port, dbName, user, password)
+		self.db = mongodb.mongodb(dbName, uri, dataPath, logPath)
 		self.type = 'mongo'
 
 	def createContainer(self, containerName, dataUnitsDic):

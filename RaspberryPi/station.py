@@ -87,7 +87,7 @@ class station:
         if usedDatabase == 'sqlite':
             self.dbc.enableSqlite(db['path'] + databaseName)
         elif usedDatabase == 'mongo':
-            self.dbc.enableMongo(databaseName, db['server'], db['port'], db['user'], db['password'])
+            self.dbc.enableMongo(databaseName, db['uri'], DATA_PATH, LOG_PATH)
         else:
             'Unknown database name'
 

@@ -4,7 +4,7 @@ import datetime
 import time
 from threading import Thread
 from alarm import alarm
-from config import cfg, DATA_PATH
+from config import cfg, DATA_PATH, LOG_PATH
 
 
 CURRENT_DATA = 'currentData'
@@ -35,7 +35,7 @@ class WebserverDataUpdater(Thread):
 		if usedDatabase == 'sqlite':
 			self.dbc.enableSqlite(db['path'] + databaseName)
 		elif usedDatabase == 'mongo':
-			self.dbc.enableMongo(databaseName, db['server'], db['port'], db['user'], db['password'])
+			self.dbc.enableMongo(databaseName, db['uri'], DATA_PATH, LOG_PATH)
 		else:
 			logging.error('Unknown database name')
 
