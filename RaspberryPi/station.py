@@ -22,13 +22,13 @@ logger.addHandler(handler)
 
 
 def getDatetime():
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    return int(datetime.datetime.utcnow().timestamp())*1000
 
 def formatDatetime(date):
-    return date.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    return date.timestamp()*1000
 
 def printSensor(sensor, value):
-    date = getDatetime()
+    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     print (date, sensor, value)
 
 class station:
@@ -54,13 +54,13 @@ class station:
         #Initialize next updates database
         self.initializeNextUpdates()
 
-        #Initialize current data database
-        currentDataCfg = dataCfg['currentData']
-        self.initialitzeCurrentData(currentDataCfg)
-
         #Initialize history database
         historyCfg = dataCfg['history']
         self.initialitzeHistoryDatabase(historyCfg)
+
+        #Initialize current data database
+        currentDataCfg = dataCfg['currentData']
+        self.initialitzeCurrentData(currentDataCfg)
 
         #Initialize daily history database
         dailyHistoryCfg = dataCfg['dailyHistory']
@@ -122,7 +122,7 @@ class station:
 
     def initialitzeHistoryDatabase(self, history):
         if history['enable']:
-            self.dbHistoryHeader = {'date' : 'TEXT'}
+            self.dbHistoryHeader = {'date' : 'TIMESTAMP'}
             self.dbHistoryHeader.update(self.sensorTypes)
 
             self.historyDataName = history['name']

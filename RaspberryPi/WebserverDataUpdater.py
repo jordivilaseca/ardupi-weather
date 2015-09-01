@@ -97,7 +97,7 @@ class WebserverDataUpdater(Thread):
 				entry = []
 				for key in self.histoyHeader:
 					entry.append(rawEntry[key])
-				data.append([jsonTimestamp(rawEntry['date']), entry])
+				data.append([rawEntry['date'], entry])
 
 			# check if the file exists, in case it does not exists we create it
 			initData = {"data" : data, "nextUpdate" : nextUpdateStr['nextUpdate']}
@@ -122,7 +122,7 @@ class WebserverDataUpdater(Thread):
 				entry = []
 				for key in self.dailyHistoyHeader:
 					entry.append(rawEntry[key])
-				data.append([jsonTimestamp(rawEntry['date'], True), entry])
+				data.append([rawEntry['date'], entry])
 
 			# check if the file exists, in case it does not exists we create it
 			showAVG = cfg['webserver']['charts']['dailyHistory']['showAVG']
