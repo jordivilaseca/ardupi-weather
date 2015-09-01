@@ -12,12 +12,6 @@ HISTORY = 'history'
 DAILY_HISTORY = 'dailyHistory'
 NEXT_UPDATES = 'nextUpdates'
 
-def jsonTimestamp(stringTime, isDate = False):
-    if isDate:
-        return time.mktime(datetime.datetime.strptime(stringTime, '%Y-%m-%d').timetuple())*1000
-    else:
-        return time.mktime(datetime.datetime.strptime(stringTime, '%Y-%m-%d %H:%M:%S.%f').timetuple())*1000
-
 class WebserverDataUpdater(Thread):
 	def __init__(self):
 		Thread.__init__(self)
