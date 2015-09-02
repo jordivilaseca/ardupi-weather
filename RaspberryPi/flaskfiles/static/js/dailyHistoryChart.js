@@ -1,11 +1,5 @@
 $(document).ready(function() {
 
-	Highcharts.setOptions({
-		global: {
-			useUTC: false
-		}
-	});
-
 	$.getJSON('http://' + document.domain + ':' + location.port + '/data/dailyHistory.json', function (data) {
 		var entries = data['data']
 		var showAVG = data['showAVG']
@@ -53,7 +47,6 @@ $(document).ready(function() {
 				selected: 0
 			},
 
-			xAxis: {type: 'datetime'},
 			yAxis: dhYAxis,
 			series: dhSeries
 		});

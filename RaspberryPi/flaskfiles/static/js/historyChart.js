@@ -1,11 +1,5 @@
 $(document).ready(function() {
 
-	Highcharts.setOptions({
-		global: {
-			useUTC: false
-		}
-	});
-
 	$.getJSON('http://' + document.domain + ':' + location.port + '/data/history.json', function (data) {
 
 		var entries = data['data']
@@ -64,7 +58,6 @@ $(document).ready(function() {
 				selected: 1
 			},
 
-			xAxis: {categories: ['Time']},
 			yAxis: hYAxis,
 			series: hSeries
 		});

@@ -20,12 +20,13 @@ logger = logging.getLogger('station')
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
-
-def getDatetime():
-    return int(datetime.datetime.utcnow().timestamp())*1000
+def getTimestamp():
+    return int(time.mktime(datetime.datetime.now().timetuple()))*1000
+    #return int(datetime.datetime.now().timestamp())*1000
 
 def formatDatetime(date):
-    return date.timestamp()*1000
+    return int(time.mktime(date.timetuple()))*1000
+    #return date.timestamp()*1000
 
 def printSensor(sensor, value):
     date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
@@ -183,7 +184,7 @@ class station:
         print('Updated current data file')
 
     def updateHistoryDatabase(self):
-        newValues = {'date' : getDatetime()}
+        newValues = {'date' : getTimestamp()}
         nullKeys = []
         for elem in self.sensorSum.keys():
             if self.sensorNum[elem] == 0:
@@ -217,7 +218,7 @@ class station:
         maxVal = datetime.datetime.combine(lastDay, datetime.datetime.max.time())
         data = self.dbc.queryBetweenValues(self.historyDataName, 'date', formatDatetime(minVal), formatDatetime(maxVal))
         dailyData = dict.fromkeys(self.dbDailyHistoryHeader, 0)
-        dailyData['date'] = lastDay.strftime("%Y-%m-%d")
+        dailyData['date'] = formatDatetime(lastDay)
         numValues = dict.fromkeys(self.sensorTypes, 0)
 
         # Initialization of dailyData
