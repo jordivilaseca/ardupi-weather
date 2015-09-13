@@ -6,12 +6,12 @@ from logging.handlers import TimedRotatingFileHandler
 
 logger = logging.getLogger('mongodb')
 
-def jsonAdd(jsonFile, collection, func, newEntry=None):
+def jsonAdd(jsonFile, collection, func, newEntry, params=None):
 	data = []
 	with open(jsonFile, 'r') as f:
 		data = json.loads(f.read())
 
-	data.append({'coll':collection, 'data':newEntry, 'func': func})
+	data.append({'coll':collection, 'data':newEntry, 'func': func, 'params': params})
 
 	with open(jsonFile, 'w') as f:
 		f.write(json.dumps(data))
@@ -55,13 +55,14 @@ class mongodb:
 				if entry['func'] == 'insert':
 					coll.insert(entry['data'])
 				elif entry['func'] == 'upsert':
-					coll.upsert(entry['data'])
+					queryKey = entry['params']['queryKey']
+					coll.update({queryKey:entry['data'][queryKey]}, entry['data'], upsert=True)
 
 				del data[0]
-				logger.info('-EXECUTED- ' + entry['func'] + ' on ' + entry['coll'] + ', tried at ' + entry['data']['date'])
+				logger.info('-EXECUTED- ' + entry['func'] + ' on ' + entry['coll'])
 			except pymongo.errors.ServerSelectionTimeoutError:
 				timeoutError = True
-				logger.warning('-ERROR DUMPING-' + entry['func'] + ' on ' + entry['coll'] + ', tried at ' + entry['data']['date'])
+				logger.warning('-ERROR DUMPING-' + entry['func'] + ' on ' + entry['coll'])
 			i += 1
 
 		with open(self.jsonFile, 'w') as f:
@@ -89,7 +90,7 @@ class mongodb:
 		try:
 			coll.update({queryKey:dic[queryKey]}, dic, upsert=True)
 		except pymongo.errors.ServerSelectionTimeoutError:
-			jsonAdd(self.jsonFile, dbCollection, 'upsert', dic)
+			jsonAdd(self.jsonFile, dbCollection, 'upsert', dic, params={'queryKey': queryKey})
 			self.existsDataToDump = True
 		else:
 			if self.existsDataToDump:
