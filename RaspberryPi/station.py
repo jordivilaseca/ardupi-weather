@@ -93,31 +93,27 @@ class station:
             'Unknown database name'
 
     def initializeNextUpdates(self):
-        self.dbc.createContainer('nextUpdates', {'name':'TEXT','nextUpdate':'TEXT'})
-        self.dbc.deleteALL('nextUpdates')
+        self.dbc.createContainer('nextUpdates', {'name':'TEXT PRIMARY KEY','nextUpdate':'TEXT'})
 
     def initialitzeCurrentData(self, currentData):
         if currentData['enable']:
             self.currentDataDatabaseName = currentData['name']
-            self.dbCurrentDataHeader = {'type':'TEXT', 'value': 'TEXT'}
+            self.dbCurrentDataHeader = {'type':'TEXT PRIMARY KEY', 'value': 'TEXT'}
 
             self.currentDataValues = {}
 
             self.dbc.createContainer(self.currentDataDatabaseName, self.dbCurrentDataHeader)
 
-            # Remove all data from previous initializations
-            self.dbc.deleteALL(self.currentDataDatabaseName)
-
             # Initialize current data database
             for key in self.sensorTypes.keys():
-                self.dbc.insert(self.currentDataDatabaseName, {'type':key, 'value':None})
+                self.dbc.upsert(self.currentDataDatabaseName, 'type', {'type':key, 'value':None})
 
             # Add update current data alarm
             update = currentData['updateEvery']
             self.alarms.add('updateCurrentData', self.updateCurrentDataDatabase, update['d'], update['h'], update['m'], update['s'])
 
             # Insert next update to database
-            self.dbc.insert('nextUpdates', {'name':'currentData','nextUpdate': self.alarms.getNextUpdateStr('updateCurrentData')})
+            self.dbc.upsert('nextUpdates', 'name',  {'name':'currentData','nextUpdate': self.alarms.getNextUpdateStr('updateCurrentData')})
 
             self.newValueFunctions.append(self.updateCurrentData)
 
@@ -135,7 +131,7 @@ class station:
             update = history['updateEvery']
             self.alarms.add('updateHistory', self.updateHistoryDatabase, update['d'], update['h'], update['m'], update['s'])
 
-            self.dbc.insert('nextUpdates', {'name':'history','nextUpdate': self.alarms.getNextUpdateStr('updateHistory')})
+            self.dbc.upsert('nextUpdates', 'name', {'name':'history','nextUpdate': self.alarms.getNextUpdateStr('updateHistory')})
 
             self.newValueFunctions.append(self.updateHistoryData)
 
@@ -155,7 +151,7 @@ class station:
 
             self.alarms.addDaily('updateDailyHistory', self.updateDailyHistoryDatabase)
 
-            self.dbc.insert('nextUpdates', {'name':'dailyHistory','nextUpdate': self.alarms.getNextUpdateStr('updateDailyHistory')})
+            self.dbc.upsert('nextUpdates', 'name',  {'name':'dailyHistory','nextUpdate': self.alarms.getNextUpdateStr('updateDailyHistory')})
 
     def configureWebserverSupport(self, webserver, history, dailyHistory):
         if webserver['enable']:

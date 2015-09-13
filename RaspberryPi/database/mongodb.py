@@ -54,14 +54,14 @@ class mongodb:
 			try:
 				if entry['func'] == 'insert':
 					coll.insert(entry['data'])
-				elif entry['func'] == 'deleteALL':
-					coll.remove()
+				elif entry['func'] == 'upsert':
+					coll.upsert(entry['data'])
 
 				del data[0]
 				logger.info('-EXECUTED- ' + entry['func'] + ' on ' + entry['coll'] + ', tried at ' + entry['data']['date'])
 			except pymongo.errors.ServerSelectionTimeoutError:
 				timeoutError = True
-				log.warning('-ERROR DUMPING-' + entry['func'] + ' on ' + entry['coll'] + ', tried at ' + entry['data']['date'])
+				logger.warning('-ERROR DUMPING-' + entry['func'] + ' on ' + entry['coll'] + ', tried at ' + entry['data']['date'])
 			i += 1
 
 		with open(self.jsonFile, 'w') as f:
@@ -79,6 +79,17 @@ class mongodb:
 			coll.insert(dic)
 		except pymongo.errors.ServerSelectionTimeoutError:
 			jsonAdd(self.jsonFile, dbCollection, 'insert', dic)
+			self.existsDataToDump = True
+		else:
+			if self.existsDataToDump:
+				self.existsDataToDump = self.dumpJson()
+
+	def upsert(self, dbCollection, queryKey, dic):
+		coll = self.getCollection(dbCollection)
+		try:
+			coll.update({queryKey:dic[queryKey]}, dic, upsert=True)
+		except pymongo.errors.ServerSelectionTimeoutError:
+			jsonAdd(self.jsonFile, dbCollection, 'upsert', dic)
 			self.existsDataToDump = True
 		else:
 			if self.existsDataToDump:
@@ -123,8 +134,7 @@ class mongodb:
 		try:
 			coll.remove()
 		except pymongo.errors.ServerSelectionTimeoutError:
-			jsonAdd(self.jsonFile, dbCollection, 'deleteALL')
-			self.existsDataToDump = True
+			pass
 		else:
 			if self.existsDataToDump:
 				self.existsDataToDump = self.dumpJson()

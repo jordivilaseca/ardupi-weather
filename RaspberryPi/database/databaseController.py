@@ -31,6 +31,14 @@ class databaseController:
 		else:
 			print('Unable to insert data to a data container, there is no database enabled')
 
+	def upsert(self, containerName, queryKey, valuesDict):
+		if self.type == 'sqlite':
+			self.db.upsert(containerName, valuesDict.keys(), valuesDict.values())
+		elif self.type == 'mongo':
+			self.db.upsert(containerName, queryKey, valuesDict)
+		else:
+			print('Unable to insert data to data container, there is no database enabled')
+
 	def update(self, containerName, changesDict, conditionKey, conditionValue):
 		if self.type == 'sqlite':
 			self.db.update(containerName, changesDict.keys(),changesDict.values(), conditionKey, conditionValue)

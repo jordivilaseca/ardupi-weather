@@ -20,6 +20,12 @@ class sqlitedb:
 		self.cursor.execute(sentence,tuple (values))
 		self.conn.commit()
 
+	def upsert(self, tableName, header, values):
+		valuesArray = ["?"] * len(header)
+		sentence = "INSERT OR REPLACE INTO " + tableName + "(" + ", ".join(header) + ") VALUES(" + ", ".join(valuesArray) + ")"
+		self.cursor.execute(sentence, tuple(values))
+		self.conn.commit()
+
 	def update(self, tableName, header, values, conditionKey, conditionValue):
 		sentence = "UPDATE " + tableName + " SET " + ", ".join("{!s}=?".format(key) for key in header) + " WHERE " + conditionKey + " == " + "'" + conditionValue + "'"
 		self.cursor.execute(sentence, tuple(values))
