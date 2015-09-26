@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from config import cfg, DATA_PATH, LOG_PATH
 from arduino.arduino import arduino
