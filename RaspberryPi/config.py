@@ -5,6 +5,7 @@ import os
 APP_PATH = os.path.dirname(os.path.realpath(__file__)) + '/'
 FLASK_PATH = APP_PATH + 'flaskfiles/'
 STATIC_FLASK_PATH = FLASK_PATH + 'static'
+IMAGES_FLASK_RELATIVE_PATH = '/static/img/'
 TEMPLATES_FLASK_PATH = FLASK_PATH + 'templates'
 DATA_PATH = APP_PATH + 'data/'
 LOG_PATH = APP_PATH + 'log/'

@@ -122,6 +122,10 @@ class mongodb:
 		coll = self.getCollection(dbCollection)
 		return list(coll.find(None, {'_id': False}))
 
+	def querySortLimit(self, dbCollection, attribute, sortOrder, limit):
+		coll = self.getCollection(dbCollection)
+		return coll.find(None, {'_id': False}).sort([(attribute, sortOrder)]).limit(limit)
+
 	def queryBetweenValues(self, dbCollection, attribute, minValue, maxValue):
 		coll = self.getCollection(dbCollection)
 		return list(coll.find({attribute: {"$gte": minValue, "$lte": maxValue}}, {'_id': False}))

@@ -23,7 +23,7 @@ arduino:
         repetitions: 15         # Maximum number of repetitions 15
 
 data:
-    name : 'temps'
+    name : 'weahter'
     values :
         {
             temperature : "FLOAT",

@@ -64,4 +64,8 @@ class databaseController:
 
 	def queryAll(self, containerName):
 		return self.db.queryAll(containerName)
+
+	def querySortLimit(self, dbCollection, attribute, sortOrder,  limit):
+		return self.db.querySortLimit(dbCollection, attribute, sortOrder, limit)
+		
 		

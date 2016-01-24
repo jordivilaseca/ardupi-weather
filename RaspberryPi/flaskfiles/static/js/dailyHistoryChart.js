@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-	$.getJSON('http://' + document.domain + ':' + location.port + '/data/dailyHistory.json', function (data) {
+	$.getJSON('http://' + document.domain + ':' + location.port + '/data?name=dailyHistory', function (data) {
 		var entries = data['data']
 		var showAVG = data['showAVG']
 		var showMINMAX = data['showMINMAX']

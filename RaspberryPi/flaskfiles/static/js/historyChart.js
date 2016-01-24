@@ -1,8 +1,8 @@
 $(document).ready(function() {
 
-	$.getJSON('http://' + document.domain + ':' + location.port + '/data/history.json', function (data) {
+	$.getJSON('http://' + document.domain + ':' + location.port + '/data?name=history', function (json) {
 
-		var entries = data['data']
+		var entries = json['data']
 		for(var i = 0; i < entries.length; i++){
 			var timestamp = entries[i][0]
 			var values = entries[i][1]
@@ -13,20 +13,7 @@ $(document).ready(function() {
 
 		$(hChart_id).highcharts('StockChart', {
 			chart : {
-				height: hHeight,
-				events : {
-					load : function () {
-						var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
-						var series = this.series;
-						var chart = $(hChart_id).highcharts()
-						socket.on('historyUpdate', function (data) {
-							for (var i = 0; i < series.length-1; i++) {
-								series[i].addPoint([data[0], data[1][i]], false, true);
-							}
-							chart.redraw()
-						});
-					}
-				}
+				height: hHeight
 			},
 
 			rangeSelector: {
@@ -61,5 +48,34 @@ $(document).ready(function() {
 			yAxis: hYAxis,
 			series: hSeries
 		});
+
+		function historyTimeout() {
+			var dom = document.domain;
+			var port = location.port;
+			var chart = $(hChart_id).highcharts();
+			var series = chart.series;
+			$.getJSON('http://'+dom+':'+port+'/data?name=history&limit=last', function (lastJson) {
+				if (lastJson['nextUpdate'] >= 0) {
+					var data = lastJson['data'][0];
+					for (var i = 0; i < series.length-1; i++) {
+						series[i].addPoint([data[0], data[1][i]], false, true);
+					}
+					chart.redraw();
+
+					setTimeout(function(){
+						historyTimeout();
+					}, lastJson['nextUpdate']*1000);
+				} else {
+					setTimeout(function(){
+						historyTimeout();
+					}, 1800000);
+				}
+			});
+		};
+
+		var nextUpdate = (json['nextUpdate'] > 0) ? json['nextUpdate']*1000 : 1800000;
+		setTimeout(function(){
+			historyTimeout();
+		}, nextUpdate);
 	});
 });
