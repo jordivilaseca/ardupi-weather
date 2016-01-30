@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-##########################################
-
 import time
 from RF24 import *
 

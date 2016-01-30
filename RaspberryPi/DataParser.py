@@ -19,7 +19,7 @@ def currentTime():
 	return datetime.utcnow()
 
 def chooseImage(currentData):
-	return IMAGES_FLASK_RELATIVE_PATH + 'header.jpg'
+	return IMAGES_FLASK_RELATIVE_PATH + cfg['webserver']['headerImg']
 
 class DataParser():
 	def __init__(self):

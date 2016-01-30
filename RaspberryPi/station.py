@@ -78,7 +78,10 @@ class station:
 
     def configureArduino(self, ard):
         connection = ard['usedConnection']
-        self.ard = arduino(connection, ard[connection], self.sensorUnits)
+        if connection == 'test':
+            self.ard = arduino(connection, self.sensorUnits, self.sensorUnits)
+        else:
+            self.ard = arduino(connection, ard[connection], self.sensorUnits)
 
     def configureDatabase(self, data):
         databaseName = data['name']

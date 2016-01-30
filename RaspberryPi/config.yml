@@ -11,7 +11,8 @@ arduino:
             BH1750  : "lux"
         }
 
-    usedConnection: usb
+    # If 'test' is used, the program generates random values for the sensors
+    usedConnection: test
 
     usb:    
         port : 'ttyACM0'
@@ -75,6 +76,7 @@ webserver:
     # Title and subtitle shown in the web.
     title: 'My weather'
     subtitle: ""
+    headerImage: "header.jpg"       # Name of the image header, it must be at flaskfiles/static/img
     names:
         # Data identifier and the name shown in the web.
         sensors:
