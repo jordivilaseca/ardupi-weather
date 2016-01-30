@@ -1,4 +1,6 @@
 arduino:
+    # Name of the sensors (it must correspond to one of the commands names send by the arduino) and a data
+    # identifier.
     sensors : 
         {
             BMP180T : "temperature",
@@ -10,20 +12,27 @@ arduino:
         }
 
     usedConnection: usb
+
     usb:    
         port : 'ttyACM0'
         baud : 57600
+
     433mhz:
         rxPin: 27   # GPIO pin
         bps: 2000
         enableRepetitions: yes
-        # Time in seconds, if a value is the same as the previous one and the time between the two values is less than maxRepetitionTime then the value will be seen as a repetition, and as a result will be discarded.
+        # Time in seconds, if a value is the same as the previous one and the time between the two values is less
+        # than maxRepetitionTime then the value will be seen as a repetition, and as a result will be discarded.
         maxRepetitionTime: 1
-    nrf24l01p:
-        repetitions: 15         # Maximum number of repetitions 15
 
+    nrf24l01p:
+        repetitions: 15         # Maximum number of repetitions is 15
+
+# All the information relative to the data and the database.
 data:
-    name : 'weahter'
+    # Name of the database.
+    name : 'weather'
+    # Data identifier and it's type.
     values :
         {
             temperature : "FLOAT",
@@ -34,9 +43,14 @@ data:
         }
 
     usedDB: "mongo"
-    sqlite: {path : "default"}
-    mongo : {uri: "mongodb://127.0.0.1:27017"}
 
+    sqlite: 
+        path : "default"
+
+    mongo : 
+        uri: "mongodb://127.0.0.1:27017"
+
+    # History record of the data.
     history:
         enable: yes
         name: "history"
@@ -49,17 +63,20 @@ data:
 
     currentData:
         enable: yes
-        path: "default"
         name: "currentData"
         updateEvery: {d: 0, h: 0, m: 2, s: 0}
 
 webserver:
     enable: yes
+
     host: '0.0.0.0'
     port: 5000
+
+    # Title and subtitle shown in the web.
     title: 'My weather'
     subtitle: ""
     names:
+        # Data identifier and the name shown in the web.
         sensors:
             {
                 temperature : Temperature,
@@ -68,12 +85,16 @@ webserver:
                 heatIndex   : Heat index,
                 lux         : Illuminance
             }
+        # Some words and the word to be shown.
         average: average
         range: range
         type: Type
         value: Value
-    updateOffset: 5 # Time in seconds, it is the offset between new recordings and live web updates
+
+    # Time in seconds, it is the offset between new recordings into the database and live web updates.
+    updateOffset: 5 
     charts:
+        # Definition of the colors to be used.
         colors: ['#2f7ed8', '#0d233a', '#8bbc21', '#910000', '#1aadce', '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a']
         history:
             enable: yes
