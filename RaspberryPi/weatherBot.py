@@ -5,7 +5,7 @@ from config import LOG_PATH
 from os import listdir
 from os.path import isfile, join
 
-API_TOKEN = "68867415:AAEW-1D_tk1b8mSpNP1ypnaLJXo5OSpy0Hw"
+API_TOKEN = "api_key"
 bot = telebot.TeleBot(API_TOKEN)
 
 print (bot.get_me())
@@ -71,5 +71,9 @@ def send_logs_names(message):
 				bot.reply_to(message,log_usage('Index out of range'))
 	else:
 		bot.reply_to(message,log_usage('Too many parameters'))
+
+@bot.message_handler(commands=['prova'])
+def prova(message):
+	bot.reply_to(message, str(message))
 
 bot.polling()

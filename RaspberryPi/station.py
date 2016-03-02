@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 from config import cfg, DATA_PATH, LOG_PATH
 from arduino.arduino import arduino
@@ -12,28 +12,69 @@ from logging.handlers import TimedRotatingFileHandler
 import time
 import json
 
+# Configuring the handler of the logger.
 LOG_FILE = LOG_PATH + 'station.log'
 handler = TimedRotatingFileHandler(LOG_FILE, when="midnight", backupCount=6)
 handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s : %(message)s'))
 
+# Configuring the logger.
 logger = logging.getLogger('station')
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
 def getTimestamp():
+
+    """
+    It returns the current timestamp of the machine.
+
+    Returns:
+        An integer containing the current timestamp.
+    """
+
     return int(time.mktime(datetime.datetime.now().timetuple()))*1000
-    #return int(datetime.datetime.now().timestamp())*1000
 
 def formatDatetime(date):
+
+    """
+    It return the timestamp of a concret date.
+
+    Args:
+        date: A datetime object.
+
+    Returns:
+        An integer containing the timestamp of a concrete date.
+    """
+
     return int(time.mktime(date.timetuple()))*1000
-    #return date.timestamp()*1000
 
 def printSensor(sensor, value):
+
+    """
+    It shows the current time, a sensor and its value in the terminal.
+
+    Args:
+        sensor: Sensor identifier to be printed
+        value: The value for the sensor.
+    """
+
     date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     print (date, sensor, value)
 
 class station:
+
+    """
+    Class dealing with the communications with an Arduino, processing of the data and its storing to a concrete
+    database.
+
+    It uses the information in config.yml to configure the station.
+    """
+
     def __init__(self):
+
+        """
+        Initialization of the station. It includes the database and the Arduino.
+        """
+
         self.dbc = databaseController.databaseController()
         self.newValueFunctions = []
         self.alarms = alarm()
@@ -67,16 +108,22 @@ class station:
         dailyHistoryCfg = dataCfg['dailyHistory']
         self.initializeDailyHistoryDatabase(dailyHistoryCfg, historyCfg)
 
-        #configure station for webserver support
-        webserverCfg = cfg['webserver']
-        self.configureWebserverSupport(webserverCfg, historyCfg, dailyHistoryCfg)
-
         #Initialize terminal input
         self.t = terminal()
 
-    #Configuration functions
+    ###########################
+    # Configuration functions #
+    ###########################
 
     def configureArduino(self, ard):
+
+        """
+        It configures an Arduino using the specified connection and its options.
+
+        Args:
+            ard: Arduino configuration.
+        """
+
         connection = ard['usedConnection']
         if connection == 'test':
             self.ard = arduino(connection, self.sensorUnits, self.sensorUnits)
@@ -84,6 +131,14 @@ class station:
             self.ard = arduino(connection, ard[connection], self.sensorUnits)
 
     def configureDatabase(self, data):
+
+        """
+        It configures the desired type of database (mongodb or sqlite).
+
+        Args:
+            data: Database configuration.
+        """
+
         databaseName = data['name']
 
         usedDatabase = data['usedDB']
@@ -96,9 +151,26 @@ class station:
             'Unknown database name'
 
     def initializeNextUpdates(self):
+
+        """
+        It configures the "nextUpdates" container. It has the next update time for currentData, 
+        history and dailyHistory containers.
+
+        This information is used to make possible to the browsers to autoupdate the webpage data
+        without refreshing the it.
+        """
+
         self.dbc.createContainer('nextUpdates', {'name':'TEXT PRIMARY KEY','nextUpdate':'TEXT'})
 
     def initialitzeCurrentData(self, currentData):
+
+        """
+        It initializes the current data container of the database.
+
+        Args:
+            currentData: Current data configuration.
+        """
+
         if currentData['enable']:
             self.currentDataDatabaseName = currentData['name']
             self.dbCurrentDataHeader = {'type':'TEXT PRIMARY KEY', 'value': 'TEXT'}
@@ -121,6 +193,14 @@ class station:
             self.newValueFunctions.append(self.updateCurrentData)
 
     def initialitzeHistoryDatabase(self, history):
+
+        """
+        It initializes the history container of the database.
+
+        Args:
+            history: History configuration.
+        """
+
         if history['enable']:
             self.dbHistoryHeader = {'date' : 'TIMESTAMP'}
             self.dbHistoryHeader.update(self.sensorTypes)
@@ -139,6 +219,15 @@ class station:
             self.newValueFunctions.append(self.updateHistoryData)
 
     def initializeDailyHistoryDatabase(self, daily, history):
+
+        """
+        It initializes the daily history container of the database.
+
+        Args:
+            daily: Daily history configuration.
+            history: History configuration.
+        """
+
         if daily['enable']:
             if not history['enable']:
                 print ("Daily history cannot be enabled because 'history' is not enabled")
@@ -156,23 +245,45 @@ class station:
 
             self.dbc.upsert('nextUpdates', 'name',  {'name':'dailyHistory','nextUpdate': self.alarms.getNextUpdateStr('updateDailyHistory')})
 
-    def configureWebserverSupport(self, webserver, history, dailyHistory):
-        if webserver['enable']:
-            if not (history['enable'] and dailyHistory['enable']):
-                print("webserver cannot be enabled because 'history' or 'dailyHistory' are not enabled")
-                return
+    ########################################################
+    # Functions to execute when a new sensor value arrives #
+    ########################################################
 
-    #Functions to execute when a new sensor value arrives
     def updateCurrentData(self, valueType, value):
+
+        """
+        It updates the current value of a type of data.
+
+        Args:
+            valueType: The type of data to update.
+            value: The new value.
+        """
+
         self.currentDataValues[valueType] = value
 
     def updateHistoryData(self, valueType, value):
+
+        """
+        It updates intermediate history data.
+
+        Args:
+            valueType: The type of data to update.
+            value: The new value.
+        """
+
         self.sensorSum[valueType] += value
         self.sensorNum[valueType] += 1
 
-    #Functions to execute at a determined time  
+    #############################################
+    # Functions to execute at a determined time #
+    #############################################  
 
     def updateCurrentDataDatabase(self):
+
+        """
+        It updates the data of the current data database and the next updates database.
+        """
+
         for (key,value) in self.currentDataValues.items():
             self.dbc.update(self.currentDataDatabaseName,{"value":value}, "type", key)
 
@@ -183,6 +294,15 @@ class station:
         print('Updated current data file')
 
     def updateHistoryDatabase(self):
+
+        """
+        It updates the history database and the next updates database.
+
+        The data stored in it is the mean of the received values from the last update to the moment
+        this function is called.
+        """
+
+        # Compute means from the received values.
         newValues = {'date' : getTimestamp()}
         nullKeys = []
         for elem in self.sensorSum.keys():
@@ -211,7 +331,16 @@ class station:
         self.sensorNum = dict.fromkeys(self.sensorNum, 0)
 
     def updateDailyHistoryDatabase(self):
-        # Query to database
+
+        """
+        It updates the daily history database and the next updates database.
+
+        The mean, minimum and maximum values are computed from the history database. It means that usually
+        the values of the minimum and maximum values will not be the correct ones, but an approximation.
+        Using smaller updating time for the history involve having smaller errors in the daily history.
+        """
+
+        # Query to history database
         lastDay = datetime.date.today() - datetime.timedelta(days=1)
         minVal = datetime.datetime.combine(lastDay, datetime.datetime.min.time())
         maxVal = datetime.datetime.combine(lastDay, datetime.datetime.max.time())
@@ -248,6 +377,7 @@ class station:
                 dailyData[key + 'MIN'] = None
                 dailyData[key + 'MAX'] = None
 
+        # Update daily history database.
         self.dbc.insert(self.dailyHistoryDataName, dailyData)
 
         # Change next update time
@@ -256,7 +386,17 @@ class station:
 
         print('Inserted data to daily history')
 
+    ###############
+    # Run station #
+    ###############
+
     def run(self):
+
+        """
+        This function starts the station, from this moment it will receive data from the Arduino and store
+        it to the database.
+        """
+
         while True:
 
             # Read data from Arduino and update the partial data

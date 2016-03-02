@@ -1,16 +1,18 @@
 from config import cfg, DATA_PATH
 import json
 
-def readJsonData(filePath):
-	with open(filePath, 'r') as jsonFile:
-		data = json.load(jsonFile)
-	return data
-
 def createHistoryChart():
+
+	"""
+	Function in charge of creating the data structure of a history chart, the char itself do not contain
+	sensor data, it only contains the structure of the chart.
+
+	Returns:
+		A dictionary that contains all the variables to make a bare history chart.
+	"""
 	chartCFG = cfg['webserver']['charts']['history']
 	colors = cfg['webserver']['charts']['colors']
 	names = cfg['webserver']['names']['sensors']
-	rawData = readJsonData(DATA_PATH + 'history.json')
 	chart = {}
 	series = []
 	yAxis = []
@@ -45,12 +47,20 @@ def createHistoryChart():
 	return chart
 
 def createDailyHistoryChart():
+
+	"""
+	Function in charge of creating the data structure of a daily history chart, the char itself do not contain
+	sensor data, it only contains the structure of the chart.
+
+	Returns:
+		A dictionary that contains all the variables to make a bare daily history chart.
+	"""
+
 	chartCFG = cfg['webserver']['charts']['dailyHistory']
 	colors = cfg['webserver']['charts']['colors']
 	names = cfg['webserver']['names']['sensors']
 	avgName = cfg['webserver']['names']['average']
 	rangeName = cfg['webserver']['names']['range']
-	rawData = readJsonData(DATA_PATH + 'dailyHistory.json')
 	chart = {}
 	series = []
 	yAxis = []
@@ -89,7 +99,22 @@ def createDailyHistoryChart():
 
 class chartManager:
 
+	"""
+	Class in charge of the creating the structure of two types of charts. A history chart that only contains
+	all the history data, and the daily history chart that contains the daily data, the minimum, maximum and
+	average for each sensor.
+
+	The structure of the charts follow the HighCharts API.
+	"""
+
 	def __init__(self):
+
+		"""
+		Initialization of the charts.
+
+		Keeping in mind that these are bare charts, the structure can be calculated at the start and will be
+		always the same.
+		"""
 		self.charts = {}
 		if cfg['webserver']['charts']['history']['enable']:
 			self.charts['history'] = createHistoryChart()
@@ -97,4 +122,11 @@ class chartManager:
 			self.charts['dailyHistory'] = createDailyHistoryChart()
 
 	def getChart(self, id):
+
+		"""
+		Get a chart. It can be a history or a dailyHistory chart.
+
+		Returns:
+			A dictionary containing the bare structure of the chart. It means without sensor data.
+		"""
 		return self.charts[id]

@@ -33,7 +33,7 @@ arduino:
 data:
     # Name of the database.
     name : 'weather'
-    # Data identifier and it's type.
+    # Data identifier and its type.
     values :
         {
             temperature : "FLOAT",

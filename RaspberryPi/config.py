@@ -11,9 +11,31 @@ DATA_PATH = APP_PATH + 'data/'
 LOG_PATH = APP_PATH + 'log/'
 
 def getPath(path):
+
+	"""
+	It returns the path, or the default path (the default data path) if the variable path is equal to "default".
+
+	Args:
+		path: The path to a directory.
+
+	Returns:
+		A string containing the correct path.
+	"""
+
 	return DATA_PATH if path == 'default' else path
 
 def setPath(cfg):
+
+	"""
+	It will compute the correct path for each path equals to "default" in a configuration file.
+
+	Args:
+		cfg: The configuration file.
+
+	Returns:
+		The rectified configuration file.
+	"""
+
 	nCfg = None
 	if isinstance(cfg, dict):
 		nCfg = {}
@@ -30,6 +52,7 @@ def setPath(cfg):
 		nCfg = cfg
 	return nCfg
 
+# Code to execute each time the file is imported.
 with codecs.open("config.yml", 'r', encoding='utf-8') as ymlfile:
 	cfg = yaml.load(ymlfile)
 
