@@ -57,9 +57,9 @@ docs/_build/
 target/
 
 # Data folder
-RaspberryPi/data
+RaspberryPi/data/*
 
 # Log folder
-RaspberryPi/log
+RaspberryPi/log/*
 
 .fuse_hidden*

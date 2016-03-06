@@ -1,4 +1,3 @@
-#include <Wire.h>
 #include <SFE_BMP180.h>
 #include <BH1750.h>
 #include <DHT.h>
@@ -14,7 +13,6 @@
   #define REPETITIONS 5   // Number of times that a message will be sent. Minimum is 1
 #elif CONNECTION_TYPE == 2
   #include <SPI.h>
-  #include "nRF24L01.h"
   #include "RF24.h"
   RF24 radio(9,10);       // CE and CSN of nrf24l01+
   const uint64_t pipes[2] = { 0xF0F0F0F0E1LL, 0xF0F0F0F0D2LL };
