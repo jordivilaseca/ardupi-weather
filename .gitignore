@@ -56,10 +56,4 @@ docs/_build/
 # PyBuilder
 target/
 
-# Data folder
-RaspberryPi/data/*
-
-# Log folder
-RaspberryPi/log/*
-
 .fuse_hidden*
