@@ -40,7 +40,7 @@ class arduino:
 			options: Dictionary containing all the options for the connexion.
 		"""
 
-		from arduino import vw433mhzConn
+		from ardupi_weather.arduino import vw433mhzConn
 		self.conn = vw433mhzConn.vw433mhzConn(options)
 
 	def initusbConn(self, options):
@@ -52,7 +52,7 @@ class arduino:
 			options: Dictionary containing all the options for the connexion.
 		"""
 
-		from arduino import usbConn
+		from ardupi_weather.arduino import usbConn
 		self.conn = usbConn.usbConn(options)
 
 	def initnrf24l01p(self, options):
@@ -64,7 +64,7 @@ class arduino:
 			options: Dictionary containing all the options for the connexion.
 		"""
 
-		from arduino import nrf24l01pConn
+		from ardupi_weather.arduino import nrf24l01pConn
 		self.conn = nrf24l01pConn.nrf24l01pConn(options)
 
 	def initTestConn(self, options):
@@ -76,7 +76,7 @@ class arduino:
 			options: Dictionary containing all the options for the connexion.
 		"""
 
-		from arduino import testConn
+		from ardupi_weather.arduino import testConn
 		self.conn = testConn.testConn(options)
 
 	def readInts(self):

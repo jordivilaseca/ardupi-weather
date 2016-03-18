@@ -167,7 +167,8 @@ class sqlitedb:
 		"""
 
 		sortDesc = "DESC" if sortOrder == 1 else "ASC"
-		sentence = "SELECT * FROM " + tableName + " ORDER BY " + attribute + " " + sortDesc + " LIMIT " + limit
+		limitSent = "" if limit == 0 else " LIMIT " + str(limit)
+		sentence = "SELECT * FROM " + tableName + " ORDER BY " + attribute + " " + sortDesc + limitSent
 		query = self.conn.execute(sentence)
 		colname = [ d[0] for d in query.description ]
 		return [dict(zip(colname, r)) for r in query.fetchall()]

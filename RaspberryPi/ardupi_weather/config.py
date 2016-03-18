@@ -1,14 +1,7 @@
 import yaml
 import codecs
 import os
-
-APP_PATH = os.path.dirname(os.path.realpath(__file__)) + '/'
-FLASK_PATH = APP_PATH + 'flaskfiles/'
-STATIC_FLASK_PATH = FLASK_PATH + 'static'
-IMAGES_FLASK_RELATIVE_PATH = '/static/img/'
-TEMPLATES_FLASK_PATH = FLASK_PATH + 'templates'
-DATA_PATH = APP_PATH + 'data/'
-LOG_PATH = APP_PATH + 'log/'
+from ardupi_weather.consts import *
 
 def getPath(path):
 
@@ -53,7 +46,7 @@ def setPath(cfg):
 	return nCfg
 
 # Code to execute each time the file is imported.
-with codecs.open("config.yml", 'r', encoding='utf-8') as ymlfile:
+with codecs.open(CONFIG_PATH, 'r', encoding='utf-8') as ymlfile:
 	cfg = yaml.load(ymlfile)
 
 cfg = setPath(cfg)

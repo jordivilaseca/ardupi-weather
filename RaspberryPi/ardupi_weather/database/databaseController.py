@@ -25,7 +25,7 @@ class databaseController:
 			path: The path (including the file name) of the database file.
 		"""
 
-		from database import sqlitedb
+		from ardupi_weather.database import sqlitedb
 
 		self.db = sqlitedb.sqlitedb(path)
 		self.type = 'sqlite'
@@ -42,7 +42,7 @@ class databaseController:
 			logPath: Path to the folder used as log folder.
 		"""
 
-		from database import mongodb
+		from ardupi_weather.database import mongodb
 		
 		self.db = mongodb.mongodb(dbName, uri, dataPath, logPath)
 		self.type = 'mongo'

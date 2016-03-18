@@ -1,8 +1,8 @@
 from bson import json_util
-from database import databaseController
+from ardupi_weather.database import databaseController
 from datetime import datetime, timedelta
 import time
-from config import cfg, DATA_PATH, LOG_PATH, IMAGES_FLASK_RELATIVE_PATH
+from ardupi_weather.config import cfg, DATA_PATH, LOG_PATH, IMAGES_FLASK_RELATIVE_PATH
 
 
 CURRENT_DATA = cfg['data']['currentData']['name']
@@ -65,7 +65,13 @@ class DataParser():
 
 		usedDatabase = data['usedDB']
 		db = data[usedDatabase]
-		self.dbc.enableMongo(databaseName, db['uri'], DATA_PATH, LOG_PATH)
+
+		if usedDatabase == 'sqlite':
+			self.dbc.enableSqlite(db['path'] + databaseName)
+		elif usedDatabase == 'mongo':
+			self.dbc.enableMongo(databaseName, db['uri'], DATA_PATH, LOG_PATH)
+		else:
+			'Unknown database name'
 
 		if cfg['webserver']['charts']['history']['enable']:
 			self.histoyHeader = []

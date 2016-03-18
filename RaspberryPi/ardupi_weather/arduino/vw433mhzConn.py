@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from arduino import vw
+from ardupi_weather.arduino import vw
 import pigpio
 from time import time
 

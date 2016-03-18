@@ -1,0 +1,1 @@
+recursive-include ardupi_weather *.css *.html *.jpg *.js *.png *.yml *.bmp

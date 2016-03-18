@@ -1,4 +1,4 @@
-from config import cfg, DATA_PATH
+from ardupi_weather.config import cfg, DATA_PATH
 import json
 
 def createHistoryChart():

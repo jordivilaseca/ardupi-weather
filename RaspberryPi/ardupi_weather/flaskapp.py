@@ -7,9 +7,9 @@ import os.path
 import time
 import datetime
 import logging
-from config import cfg, TEMPLATES_FLASK_PATH, STATIC_FLASK_PATH, DATA_PATH, LOG_PATH
-from flaskfiles.app.chartManager import chartManager
-from flaskfiles.app.DataParser import DataParser
+from ardupi_weather.config import cfg, TEMPLATES_FLASK_PATH, STATIC_FLASK_PATH, DATA_PATH, LOG_PATH
+from ardupi_weather.flaskfiles.app.chartManager import chartManager
+from ardupi_weather.flaskfiles.app.DataParser import DataParser
 
 # Set the logging level
 logging.basicConfig(level=logging.INFO)
@@ -101,7 +101,10 @@ def send_database():
 		return send_from_directory(DATA_PATH, cfg['data']['name'])
 	else:
 		return ""
- 
-if __name__ == '__main__':
+
+def main():
 	app.run(host=cfg['webserver']['host'],port=cfg['webserver']['port'])
+
+if __name__ == '__main__':
+	main()
 

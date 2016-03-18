@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-from config import cfg, DATA_PATH, LOG_PATH
-from arduino.arduino import arduino
-from database import databaseController
+from ardupi_weather.config import cfg, DATA_PATH, LOG_PATH
+from ardupi_weather.arduino.arduino import arduino
+from ardupi_weather.database import databaseController
 import os
-from terminal import terminal
-from alarm import alarm
+from ardupi_weather.terminal import terminal
+from ardupi_weather.alarm import alarm
 import datetime
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -421,6 +421,10 @@ class station:
                 self.ard.write(inp)
 
             time.sleep(0.1)
+
+def main():
+    s = station()
+    s.run()
 
 if __name__ == '__main__':
     s = station()
