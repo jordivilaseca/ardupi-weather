@@ -63,7 +63,7 @@ class mongodb:
 
 		try:
 			self.client=pymongo.MongoClient(uri)
-		except pymongo.errors.ConnectionFailure as e:
+		except Exception as e:
 			print ("Could not connect to MongoDB: %s" % e)
 
 		self.jsonFile = dataPath + 'dataToUpdate.json'
@@ -102,7 +102,7 @@ class mongodb:
 
 				del data[0]
 				logger.info('-EXECUTED- ' + entry['func'] + ' on ' + entry['coll'])
-			except pymongo.errors.ServerSelectionTimeoutError:
+			except Exception:
 				timeoutError = True
 				logger.warning('-ERROR DUMPING-' + entry['func'] + ' on ' + entry['coll'])
 			i += 1
@@ -142,7 +142,7 @@ class mongodb:
 		coll = self.getCollection(dbCollection)
 		try:
 			coll.insert(dic)
-		except pymongo.errors.ServerSelectionTimeoutError:
+		except Exception:
 			jsonAdd(self.jsonFile, dbCollection, 'insert', dic)
 			self.existsDataToDump = True
 		else:
@@ -167,7 +167,7 @@ class mongodb:
 		coll = self.getCollection(dbCollection)
 		try:
 			coll.update({queryKey:dic[queryKey]}, dic, upsert=True)
-		except pymongo.errors.ServerSelectionTimeoutError:
+		except Exception:
 			jsonAdd(self.jsonFile, dbCollection, 'upsert', dic, params={'queryKey': queryKey})
 			self.existsDataToDump = True
 		else:
@@ -189,7 +189,7 @@ class mongodb:
 		coll = self.getCollection(dbCollection)
 		try:
 			coll.update({conditionKey: conditionValue}, {'$set': dic}, False)
-		except pymongo.errors.ServerSelectionTimeoutError:
+		except Exception:
 			pass
 		else:
 			if self.existsDataToDump:
@@ -279,7 +279,7 @@ class mongodb:
 		coll = self.getCollection(dbCollection)
 		try:
 			coll.remove()
-		except pymongo.errors.ServerSelectionTimeoutError:
+		except Exception:
 			pass
 		else:
 			if self.existsDataToDump:
