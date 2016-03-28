@@ -9,6 +9,10 @@ packages = [
         'ardupi_weather.flaskfiles.app'
 ]
 
+extras = {
+    'rpi':['RPI.GPIO>=0.6.1']
+}
+
 setup(
     name='ardupi_weather',
     url='https://github.com/jordivilaseca/Weather-station',
@@ -20,13 +24,13 @@ setup(
     packages=[str(l) for l in packages],
     zip_safe=False,
     include_package_data=True,
+    extras_require=extras,
     install_requires=[
         'Flask>=0.10.1',
-        'pymongo>=3.2.1',
+        'pymongo>=3.2.2',
         'PyYAML>=3.11',
         'bson>=0.4.2',
-        'pyserial>=3.0.1' #,
-        #'RPi.GPIO>=0.6.1'
+        'pyserial>=3.0.1'
     ],
     entry_points={
         'console_scripts': [
