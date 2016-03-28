@@ -49,7 +49,7 @@ class nrf24l01pConn:
 
         data = []
         while self.radio.available():
-            len = self.radio.getDynamicPayloadSize()
-            data.append(self.radio.read(len))
+            lenght = str(self.radio.getDynamicPayloadSize())
+            data.append(self.radio.read(lenght))
         return data
 
