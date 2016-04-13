@@ -106,3 +106,12 @@ All the configuration of the Raspberry Pi is inside a config.yml file. This file
 When you have the package installed you must be able to start the station using the default configuration (the data will be randomly generated).
 
 to run the station you need write this command into the terminal `weather-station`, or for the server case `weather-server`. In case of using NRF24L01+ as a connexion, it could be you need to run the weather-station as super user `sudo weather-station`.
+
+## Screenshots
+### Webpage
+![Image Alt](https://github.com/jordivilaseca/ardupi-weather/blob/master/screenshots/webpage1.png)
+![Image Alt](https://github.com/jordivilaseca/ardupi-weather/blob/master/screenshots/webpage2.png)
+### History chart
+![Image Alt](https://github.com/jordivilaseca/ardupi-weather/blob/master/screenshots/historyChart.png)
+![Image Alt](https://github.com/jordivilaseca/ardupi-weather/blob/master/screenshots/DailyChart.png)
+
