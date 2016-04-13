@@ -3,8 +3,21 @@
 #include <DHT.h>
 
 #define count(x) sizeof(x)/sizeof(unsigned long)
-#define groundPin A0
 
+#define BMP180T 0   // Temperature
+#define BMP180P 1   // Pressure
+#define DHT22T  2   // Temperature
+#define DHT22H  3   // Humidity
+#define DHT22HI 4   // Heat Index
+#define BH1750L 5   // Light sensor
+#define LM35    6   // Temperature (analogical)
+#define LDR     7   // Light sensor (analogical)
+
+#define NOTUSED -1  // For BMP180/DHT22/BH1750 sensor.
+
+/*
+ * CONNEXION CONFIGURATION
+ */
 #define CONNECTION_TYPE 2 // 0 -> USB, 1 -> 433mhz, 2 -> nrf24l01+
 
 #if CONNECTION_TYPE == 1
@@ -18,35 +31,55 @@
   const uint64_t pipes[2] = { 0xF0F0F0F0E1LL, 0xF0F0F0F0D2LL };
 #endif
 
+/*
+ * BMP180 CONFIGURATION
+ */
+#define BMP180_ENABLE true
 #define ALTITUDE 570 // We need it for the barometric pressure calculus
 
-#define BMP180T 0   // Temperature
-#define BMP180P 1   // Pressure
-#define DHT22T  2   // Temperature
-#define DHT22H  3   // Humidity
-#define DHT22HI 4   // Heat Index
-#define BH1750L 5   // Light sensor
-
-#define NOTUSED -1  // For BMP180/DHT22 sensor.
-
+/*
+ * DHTXX CONFIGURATION
+ */
+#define DHT_ENABLE true
 #define DHTTYPE DHT22
 #define DHTPIN  6
 
-SFE_BMP180 pressure;
-DHT dht(DHTPIN, DHTTYPE);
-BH1750 light;
+/*
+ * BH1750 CONFIGURATION
+ */
+ #define BH1750_ENABLE true
 
+/*
+ * ANALOG SENSOR CONFIGURATION
+ */
+#define groundPin A0  // In case of not having any analog it doesn't matter its value.
+
+/*
+ * GENERAL CONFIGURATION
+ */
 int types[] = {BMP180T,BMP180P,DHT22T,DHT22H,DHT22HI,BH1750L};
 unsigned long lastUpdate[] = {0,0,0,0,0,0};
 unsigned long updateTimes[] = {60000,60000,30000,30000,60000,60000};
 int pins[] = {NOTUSED,NOTUSED,NOTUSED,NOTUSED,NOTUSED,NOTUSED};
+
+/*
+ * DECLARE VARIABLES
+ */
+#if BMP180_ENABLE
+  SFE_BMP180 pressure;
+#endif
+#if DHT_ENABLE
+  DHT dht(DHTPIN, DHTTYPE);
+#endif
+#if BH1750_ENABLE
+  BH1750 light;
+#endif
 
 int secureAnalogRead(int pin) {
   delay(0.01);
   analogRead(groundPin);
   delay(0.01);
   return analogRead(pin);
-  
 }
 
 boolean bmp180Temperature(double &T) {
@@ -173,6 +206,17 @@ void update(int type, int pin) {
         v = String(BH1750Light());
         break;
       }
+    case LM35:
+      {
+        c = "LM35";
+        v = secureAnalogRead(pin);
+        break;
+      }
+    case LDR:
+      {
+        c = "LDR";
+        v = secureAnalogRead(pin);
+      }
   }
   sendCommand(c, v);
 }
@@ -192,25 +236,33 @@ void updateAll() {
 
 void setup() {
 
-#if CONNECTION_TYPE == 0
-  Serial.begin(57600,SERIAL_8E1); // set the baud rate
-#elif CONNECTION_TYPE == 1
-  vw_set_tx_pin(TRANSMIT_PIN);
-  vw_setup(2000);       // Bits per sec
-#elif CONNECTION_TYPE == 2
-  radio.begin();
-  radio.setPALevel(RF24_PA_MAX);
-  radio.setDataRate( RF24_250KBPS ) ;
-  radio.enableDynamicPayloads();
-  radio.setRetries(5,15);
-  radio.openWritingPipe(pipes[0]);
-  radio.openReadingPipe(1,pipes[1]);
-  radio.stopListening();
-#endif
+  #if CONNECTION_TYPE == 0
+    Serial.begin(57600,SERIAL_8E1); // set the baud rate
+  #elif CONNECTION_TYPE == 1
+    vw_set_tx_pin(TRANSMIT_PIN);
+    vw_setup(2000);       // Bits per sec
+  #elif CONNECTION_TYPE == 2
+    radio.begin();
+    radio.setPALevel(RF24_PA_MAX);
+    radio.setDataRate( RF24_250KBPS ) ;
+    radio.enableDynamicPayloads();
+    radio.setRetries(5,15);
+    radio.openWritingPipe(pipes[0]);
+    radio.openReadingPipe(1,pipes[1]);
+    radio.stopListening();
+  #endif
 
-  pressure.begin();
-  dht.begin();
-  light.begin();
+  #if BMP180_ENABLE
+    pressure.begin();
+  #endif
+
+  #if DHT_ENABLE
+    dht.begin();
+  #endif
+
+  #if BH1750_ENABLE
+    light.begin();
+  #endif
   
   for (int i = 0; i < count(updateTimes); i++) {
     update(types[i],pins[i]);
