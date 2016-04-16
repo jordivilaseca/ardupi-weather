@@ -29,7 +29,6 @@ setup(
         'Flask>=0.10.1',
         'pymongo>=3.2.2',
         'PyYAML>=3.11',
-        'bson>=0.4.2',
         'pyserial>=3.0.1'
     ],
     entry_points={
