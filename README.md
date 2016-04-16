@@ -36,7 +36,7 @@ Once you have all the necessary packages downloaded you must be able to compile 
 To install the package on a Raspberry Pi you can do the following.
 
 ```bash
-sudo pip install "git+https://github.com/jordivilaseca/ardupi-weather.git#egg=ardupi-weather[rpi]"
+sudo pip install "git+https://github.com/jordivilaseca/ardupi-weather.git#egg=ardupi-weather[rpi]&subdirectory=RaspberryPi"
 ```
 
 The only difference between this and the PC installer is that in the case of the Raspberry Pi it also installs the GPIO package used in the NRF24 connexion, package not supported in a PC.
@@ -47,7 +47,7 @@ Check out the additional packages for some specific configurations.
 Use the following command.
 
 ```bash
-sudo pip install "git+https://github.com/jordivilaseca/ardupi-weather.git#egg=ardupi-weather"
+sudo pip install "git+https://github.com/jordivilaseca/ardupi-weather.git#egg=ardupi-weather&subdirectory=RaspberryPi"
 ```
 
 #### Additional packages
