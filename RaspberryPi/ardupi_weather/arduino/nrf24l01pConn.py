@@ -11,7 +11,7 @@ class nrf24l01pConn:
     It uses the library https://github.com/TMRh20/RF24 to do the transmission of the data.
     """
 
-    # Used pipes, thy must be the same for the Arduino and the Raspberry Pi
+    # Used pipes, they must be the same for the Arduino and the Raspberry Pi
     PIPES = [0xF0F0F0F0E1, 0xF0F0F0F0D2]
 
     def __init__(self, options):
@@ -21,7 +21,7 @@ class nrf24l01pConn:
 
         Args:
             options: Is a dictionary, it must have a 'repetitions' key. It is the maximum number of repetitions
-                to do when you are sending a value and the receiver do not get it, the value must be between 
+                to do when you are sending a value and the receiver do not get it, the value must be between
                 [1, 15].
         """
 

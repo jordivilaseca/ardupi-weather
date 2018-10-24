@@ -25,7 +25,7 @@ def getCurrentTime():
 
 	return datetime.utcnow()
 
-class alarm:
+class Alarm:
 
 	"""
 	Class used for tasks management, you can add a one time alarm for a specific time, or an alarm every
@@ -161,4 +161,3 @@ class alarm:
 				else:
 					self.remove(key)
 		return funcs
-		

@@ -1,5 +1,5 @@
 from bson import json_util
-from ardupi_weather.database import databaseController
+from ardupi_weather.database.databaseController import DatabaseController
 from datetime import datetime, timedelta
 import time
 from ardupi_weather.config import cfg, DATA_PATH, LOG_PATH, IMAGES_FLASK_RELATIVE_PATH
@@ -58,7 +58,7 @@ class DataParser():
 
 		The configuration parameters are read from the configuration file.
 		"""
-		self.dbc = databaseController.databaseController()
+		self.dbc = DatabaseController()
 
 		data = cfg['data']
 		databaseName = data['name']
@@ -103,7 +103,7 @@ class DataParser():
 		jsonData = {"data" : data, "nextUpdate" : timeToUpdate.total_seconds(), "headerImg": chooseImage(data)}
 
 		return json_util.dumps(jsonData)
-		
+
 
 	def historyStr(self, sortOrder, limit):
 		"""
@@ -136,7 +136,7 @@ class DataParser():
 			data.append([rawEntry['date'], entry])
 
 		jsonData = {"data" : data, "nextUpdate" : timeToUpdate.total_seconds()}
-		
+
 		return json_util.dumps(jsonData)
 
 
@@ -157,7 +157,7 @@ class DataParser():
 		"""
 
 		nextUpdate = str2datetime(self.dbc.queryOne(NEXT_UPDATES, 'name', DAILY_HISTORY)['nextUpdate'])
-		
+
 		offset = cfg['webserver']['updateOffset']
 		timeToUpdate = (nextUpdate - currentTime()) + timedelta(seconds=offset)
 
@@ -174,5 +174,5 @@ class DataParser():
 		showAVG = cfg['webserver']['charts']['dailyHistory']['showAVG']
 		showMINMAX = cfg['webserver']['charts']['dailyHistory']['showMINMAX']
 		jsonData = {"data" : data, "nextUpdate" : timeToUpdate.total_seconds(), "showAVG": showAVG, "showMINMAX": showMINMAX}
-		
+
 		return json_util.dumps(jsonData)

@@ -8,8 +8,8 @@ import time
 import datetime
 import logging
 from ardupi_weather.config import cfg, TEMPLATES_FLASK_PATH, STATIC_FLASK_PATH, DATA_PATH, LOG_PATH
-from ardupi_weather.flaskfiles.app.chartManager import chartManager
-from ardupi_weather.flaskfiles.app.DataParser import DataParser
+from ardupi_weather.flaskfiles.app.chartManager import ChartManager
+from ardupi_weather.flaskfiles.app.dataParser import DataParser
 
 # Set the logging level
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__,static_folder=STATIC_FLASK_PATH,template_folder=TEMPLATES_FLASK_PATH)
 
 dp = DataParser()
-cm = chartManager()
+cm = ChartManager()
 
 @app.route('/')
 def home():
@@ -94,7 +94,7 @@ def data():
 def send_database():
 
 	"""
-	In the case of using a sqlite database, you can obtain a copy of the database. 
+	In the case of using a sqlite database, you can obtain a copy of the database.
 	"""
 
 	if cfg['data']['usedDB'] == 'sqlite':

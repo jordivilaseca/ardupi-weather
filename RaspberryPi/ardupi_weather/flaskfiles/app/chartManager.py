@@ -95,9 +95,9 @@ def createDailyHistoryChart():
 	chart['series'] = series
 	chart['name'] = chartCFG['name']
 	chart['yAxis'] = yAxis
-	return chart	
+	return chart
 
-class chartManager:
+class ChartManager:
 
 	"""
 	Class in charge of the creating the structure of two types of charts. A history chart that only contains

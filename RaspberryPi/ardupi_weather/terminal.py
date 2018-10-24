@@ -6,7 +6,7 @@ from select import select
 import time
 
 
-class terminal:
+class Terminal:
 
     def __init__(self):
 

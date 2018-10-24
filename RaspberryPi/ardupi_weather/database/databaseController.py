@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-class databaseController:
+class DatabaseController:
 
 	"""
 	Class dealing with the storing of the data.
@@ -25,9 +25,9 @@ class databaseController:
 			path: The path (including the file name) of the database file.
 		"""
 
-		from ardupi_weather.database import sqlitedb
+		from ardupi_weather.database.sqlitedb import SQLiteDB
 
-		self.db = sqlitedb.sqlitedb(path)
+		self.db = SQLiteDB(path)
 		self.type = 'sqlite'
 
 	def enableMongo(self, dbName, uri, dataPath, logPath):
@@ -42,9 +42,9 @@ class databaseController:
 			logPath: Path to the folder used as log folder.
 		"""
 
-		from ardupi_weather.database import mongodb
-		
-		self.db = mongodb.mongodb(dbName, uri, dataPath, logPath)
+		from ardupi_weather.database.mongodb import MongoDB
+
+		self.db = MongoDB(dbName, uri, dataPath, logPath)
 		self.type = 'mongo'
 
 	def createContainer(self, containerName, dataUnitsDic):
@@ -211,5 +211,4 @@ class databaseController:
 			return self.db.querySortLimit(containerName, attribute, sortOrder, limit)
 		else:
 			raise Exception('Unable to query data, the is no database enabled')
-		
-		
+

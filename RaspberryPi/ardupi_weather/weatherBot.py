@@ -34,7 +34,7 @@ def send_station_status(message):
 			m += 'OK\n'
 		else:
 			m += 'NOT WORKING!\n'
-	
+
 	bot.reply_to(message, m)
 
 @bot.message_handler(commands=['logs'])

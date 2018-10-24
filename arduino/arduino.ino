@@ -263,7 +263,7 @@ void setup() {
   #if BH1750_ENABLE
     light.begin();
   #endif
-  
+
   for (int i = 0; i < count(updateTimes); i++) {
     update(types[i],pins[i]);
   }

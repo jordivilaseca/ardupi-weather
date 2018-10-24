@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 from ardupi_weather.config import cfg, DATA_PATH, LOG_PATH
-from ardupi_weather.arduino.arduino import arduino
-from ardupi_weather.database import databaseController
+from ardupi_weather.arduino.arduino import Arduino
+from ardupi_weather.database.databaseController import DatabaseController
 import os
-from ardupi_weather.terminal import terminal
-from ardupi_weather.alarm import alarm
+from ardupi_weather.terminal import Terminal
+from ardupi_weather.alarm import Alarm
 import datetime
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -60,7 +60,7 @@ def printSensor(sensor, value):
     date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     print (date, sensor, value)
 
-class station:
+class Station:
 
     """
     Class dealing with the communications with an Arduino, processing of the data and its storing to a concrete
@@ -75,15 +75,15 @@ class station:
         Initialization of the station. It includes the database and the Arduino.
         """
 
-        self.dbc = databaseController.databaseController()
+        self.dbc = DatabaseController()
         self.newValueFunctions = []
-        self.alarms = alarm()
+        self.alarms = Alarm()
 
         self.sensorData = cfg['arduino']['sensors']
         self.sensorNamesList = list(self.sensorData.keys())
 
         self.sensorTypes = cfg['data']['values']
-        self.sensorUnits = {key: self.sensorTypes[value] for key,value in self.sensorData.items()}      
+        self.sensorUnits = {key: self.sensorTypes[value] for key,value in self.sensorData.items()}
 
         #Configure arduino
         arduinoCfg = cfg['arduino']
@@ -109,7 +109,7 @@ class station:
         self.initializeDailyHistoryDatabase(dailyHistoryCfg, historyCfg)
 
         #Initialize terminal input
-        self.t = terminal()
+        self.t = Terminal()
 
     ###########################
     # Configuration functions #
@@ -126,9 +126,9 @@ class station:
 
         connection = ard['usedConnection']
         if connection == 'test':
-            self.ard = arduino(connection, self.sensorUnits, self.sensorUnits)
+            self.ard = Arduino(connection, self.sensorUnits, self.sensorUnits)
         else:
-            self.ard = arduino(connection, ard[connection], self.sensorUnits)
+            self.ard = Arduino(connection, ard[connection], self.sensorUnits)
 
     def configureDatabase(self, data):
 
@@ -153,7 +153,7 @@ class station:
     def initializeNextUpdates(self):
 
         """
-        It configures the "nextUpdates" container. It has the next update time for currentData, 
+        It configures the "nextUpdates" container. It has the next update time for currentData,
         history and dailyHistory containers.
 
         This information is used to make possible to the browsers to autoupdate the webpage data
@@ -276,7 +276,7 @@ class station:
 
     #############################################
     # Functions to execute at a determined time #
-    #############################################  
+    #############################################
 
     def updateCurrentDataDatabase(self):
 
@@ -314,7 +314,7 @@ class station:
 
         if len(nullKeys) != 0:
             logger.warning('-History update- No data received for %s', ', '.join(nullKeys))
-        
+
         logger.info('-History update- %s', ', '.join("%s:%i" % (k,v) for k,v in self.sensorNum.items()))
 
         # Update database
@@ -423,11 +423,11 @@ class station:
             time.sleep(0.1)
 
 def main():
-    s = station()
+    s = Station()
     s.run()
 
 if __name__ == '__main__':
-    s = station()
+    s = Station()
     s.run()
 
-        
+

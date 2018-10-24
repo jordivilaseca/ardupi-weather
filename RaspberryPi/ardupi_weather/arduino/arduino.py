@@ -2,7 +2,7 @@
 
 from time import sleep
 
-class arduino:
+class Arduino:
 
 	"""
 	Class dealing with the different communication methods and the parsing of the data.
@@ -22,10 +22,12 @@ class arduino:
 			sensors: Dictionary containing sensor ids and the type of data that must return.
 		"""
 
-		self.connTypes = {	'433mhz' : self.initvw433mhzConn, 
-							'usb' : self.initusbConn, 
-							'nrf24l01p' : self.initnrf24l01p,
-							'test': self.initTestConn}
+		self.connTypes = {
+			'433mhz' : self.initvw433mhzConn,
+			'usb' : self.initusbConn,
+			'nrf24l01p' : self.initnrf24l01p,
+			'test': self.initTestConn
+		}
 
 		self.connTypes[connType](options)
 		self.sensors = sensors
@@ -52,8 +54,8 @@ class arduino:
 			options: Dictionary containing all the options for the connexion.
 		"""
 
-		from ardupi_weather.arduino import usbConn
-		self.conn = usbConn.usbConn(options)
+		from ardupi_weather.arduino.usbConn import USBConn
+		self.conn = USBConn(options)
 
 	def initnrf24l01p(self, options):
 
@@ -64,8 +66,8 @@ class arduino:
 			options: Dictionary containing all the options for the connexion.
 		"""
 
-		from ardupi_weather.arduino import nrf24l01pConn
-		self.conn = nrf24l01pConn.nrf24l01pConn(options)
+		from ardupi_weather.arduino.nrf24l01pConn import nrf24l01pConn
+		self.conn = nrf24l01pConn(options)
 
 	def initTestConn(self, options):
 
@@ -76,8 +78,8 @@ class arduino:
 			options: Dictionary containing all the options for the connexion.
 		"""
 
-		from ardupi_weather.arduino import testConn
-		self.conn = testConn.testConn(options)
+		from ardupi_weather.arduino.testConn import TestConn
+		self.conn = TestConn(options)
 
 	def readInts(self):
 
@@ -97,7 +99,7 @@ class arduino:
 			return int(self.readFloats())
 		except ValueError:
 			raise ValueError("The received value from the Arduino is not an integer")
-		
+
 
 	def readFloats(self):
 

@@ -1,7 +1,7 @@
 arduino:
     # Name of the sensors (it must correspond to one of the commands names send by the arduino) and a data
     # identifier.
-    sensors : 
+    sensors :
         {
             BMP180T : "temperature",
             BMP180P : "pressure",
@@ -14,7 +14,7 @@ arduino:
     # If 'test' is used, the program generates random values for the sensors
     usedConnection: test
 
-    usb:    
+    usb:
         port : 'ttyACM0'
         baud : 57600
 
@@ -45,10 +45,10 @@ data:
 
     usedDB: "sqlite"
 
-    sqlite: 
+    sqlite:
         path : "default"
 
-    mongo : 
+    mongo :
         uri: "mongodb://127.0.0.1:27017"
 
     # History record of the data.
@@ -94,7 +94,7 @@ webserver:
         value: Value
 
     # Time in seconds, it is the offset between new recordings into the database and live web updates.
-    updateOffset: 5 
+    updateOffset: 5
     charts:
         # Definition of the colors to be used.
         colors: ['#2f7ed8', '#0d233a', '#8bbc21', '#910000', '#1aadce', '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a']
@@ -179,4 +179,4 @@ webserver:
 
     liveData:
         enable: yes
-        name: 'Live data'        
+        name: 'Live data'

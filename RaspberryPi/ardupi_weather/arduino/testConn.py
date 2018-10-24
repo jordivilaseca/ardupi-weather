@@ -3,14 +3,14 @@
 import random
 from time import time
 
-class testConn:
+class TestConn:
 
     """
     This class creates random values for the sensors used.
 
     Class used for testing purposes, the data is generated using a normal distribution with random mean
     and standard deviation. The time between two generated values for a sensor is random, but is fixed at
-    the initialization of the class. 
+    the initialization of the class.
     """
     MEAN_MIN = -100
     MEAN_MAX = 100
@@ -28,7 +28,7 @@ class testConn:
         are different for all the sensors and are generated randomly.
 
         Args:
-            options: It is a dictionary. For each one of its items, the key is a sensor ID and the value 
+            options: It is a dictionary. For each one of its items, the key is a sensor ID and the value
                 the type of data that it sends (FLOAT or INTEGER).
         """
 
@@ -72,7 +72,7 @@ class testConn:
     def getEvery(self):
 
         """
-        It calculates a random time between two generated results for a sensor. It's value is between 
+        It calculates a random time between two generated results for a sensor. It's value is between
         STAND_DEVIATION_MIN and STAND_DEVIATION_MAX.
 
         Returns:

@@ -29,14 +29,14 @@ def jsonAdd(jsonFile, collection, func, newEntry, params=None):
 		f.write(json.dumps(data))
 	logger.warning('-ADDED TO QUEUE- (' + func + ' on ' + collection + ') ' + json.dumps(newEntry))
 
-class mongodb:
+class MongoDB:
 
 	"""
 	Class dealing with the storing of the data to a mongo database.
 
 	This class stores the data to a mongo database, in case that an exception occurs (for example, due to t
 	timeout or connection problems), it stores the data to a intermediate file and the next time that a query
-	to the database is correctly done it dumps the file to the database. The system stores operations as 
+	to the database is correctly done it dumps the file to the database. The system stores operations as
 	inserting or upserting an entry to the database.
 	"""
 

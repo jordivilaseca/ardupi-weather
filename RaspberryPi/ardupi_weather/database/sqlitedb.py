@@ -2,7 +2,7 @@
 
 import sqlite3
 
-class sqlitedb:
+class SQLiteDB:
 
 	"""
 	Class dealing with the storing of the data to a sqlite database.
@@ -26,7 +26,7 @@ class sqlitedb:
 
 		"""
 		Function that creates a new table to the database, or does nothing in case this was previously created
-		
+
 		Args:
 			tableName: Name of the table to create.
 			header: A list, each entry contains the variable name and its type separated by a space.

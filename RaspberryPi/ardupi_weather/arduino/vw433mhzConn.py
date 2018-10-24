@@ -55,4 +55,4 @@ class vw433mhzConn:
 			else:
 				data.append(msg)
 		return data
-		
+
